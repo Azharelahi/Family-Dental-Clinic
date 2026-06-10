@@ -1,8 +1,9 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
-
+import AppDatabase from './db/database';
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
+let db;
 if (started) {
   app.quit();
 }
@@ -33,7 +34,7 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   createWindow();
-
+db = new AppDatabase();
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   app.on('activate', () => {
