@@ -27,7 +27,9 @@ class AppDatabase {
                 phone TEXT NOT NULL,
 
                 address TEXT,
-                status TEXT DEFAULT 'Active'
+                status TEXT DEFAULT 'Active',
+
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `);
 
@@ -42,6 +44,8 @@ class AppDatabase {
                 diagnosis TEXT,
                 treatment TEXT,
                 notes TEXT,
+
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
                 FOREIGN KEY (patient_id) REFERENCES patients(id)
             )
