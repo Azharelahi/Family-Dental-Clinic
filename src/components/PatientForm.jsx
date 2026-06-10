@@ -2,304 +2,197 @@ import { useState } from "react";
 
 const ff = "'Segoe UI', system-ui, -apple-system, sans-serif";
 
-const styles = {
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px",
-    width: "100%",
+const S = {
+  form: { display: "flex", flexDirection: "column", gap: "24px", width: "100%" },
+  sectionTitle: {
+    fontSize: "11px", fontWeight: "700", color: "#90A4AE",
+    textTransform: "uppercase", letterSpacing: "1px",
+    margin: "0 0 12px 0", display: "flex", alignItems: "center", gap: "8px",
   },
-  row: {
-    display: "flex",
-    gap: "20px",
-    flexWrap: "wrap",
-  },
-  fieldGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-    flex: "1 1 240px",
-    minWidth: "0",
-  },
-  fieldGroupFull: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-    flex: "1 1 100%",
-  },
-  label: {
-    fontSize: "12px",
-    fontWeight: "600",
-    color: "#546E7A",
-    letterSpacing: "0.8px",
-    textTransform: "uppercase",
-    fontFamily: ff,
-  },
+  sectionLine: { flex: 1, height: "1px", background: "#E8EEF7" },
+  section: { display: "flex", flexDirection: "column", gap: "16px" },
+  row: { display: "flex", gap: "16px", flexWrap: "wrap" },
+  field: { display: "flex", flexDirection: "column", gap: "6px", flex: "1 1 220px", minWidth: 0 },
+  fieldFull: { display: "flex", flexDirection: "column", gap: "6px", flex: "1 1 100%" },
+  label: { fontSize: "11px", fontWeight: "600", color: "#546E7A", letterSpacing: "0.8px", textTransform: "uppercase", fontFamily: ff },
+  required: { color: "#EF4444", marginLeft: "2px" },
   input: {
-    padding: "11px 14px",
-    borderRadius: "10px",
-    border: "1.5px solid #CFD8DC",
-    fontSize: "14px",
-    color: "#263238",
-    background: "#FAFCFE",
-    outline: "none",
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-    fontFamily: ff,
-    width: "100%",
-    boxSizing: "border-box",
+    padding: "11px 14px", borderRadius: "10px", border: "1.5px solid #CFD8DC",
+    fontSize: "14px", color: "#263238", background: "#FAFCFE", outline: "none",
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease", fontFamily: ff,
+    width: "100%", boxSizing: "border-box",
   },
-  inputFocus: {
-    borderColor: "#1565C0",
-    boxShadow: "0 0 0 3px rgba(21,101,192,0.1)",
-  },
+  inputFocus: { borderColor: "#1565C0", boxShadow: "0 0 0 3px rgba(21,101,192,0.1)" },
   select: {
-    padding: "11px 14px",
-    borderRadius: "10px",
-    border: "1.5px solid #CFD8DC",
-    fontSize: "14px",
-    color: "#263238",
-    background: "#FAFCFE",
-    outline: "none",
-    cursor: "pointer",
-    fontFamily: ff,
-    width: "100%",
-    boxSizing: "border-box",
+    padding: "11px 14px", borderRadius: "10px", border: "1.5px solid #CFD8DC",
+    fontSize: "14px", color: "#263238", background: "#FAFCFE", outline: "none",
+    cursor: "pointer", fontFamily: ff, width: "100%", boxSizing: "border-box",
     appearance: "none",
-    backgroundImage:
-      "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23546E7A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")",
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "right 14px center",
-    paddingRight: "36px",
+    backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23546E7A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")",
+    backgroundRepeat: "no-repeat", backgroundPosition: "right 14px center", paddingRight: "36px",
   },
   textarea: {
-    padding: "11px 14px",
-    borderRadius: "10px",
-    border: "1.5px solid #CFD8DC",
-    fontSize: "14px",
-    color: "#263238",
-    background: "#FAFCFE",
-    outline: "none",
-    resize: "vertical",
-    minHeight: "90px",
-    fontFamily: ff,
-    width: "100%",
-    boxSizing: "border-box",
+    padding: "11px 14px", borderRadius: "10px", border: "1.5px solid #CFD8DC",
+    fontSize: "14px", color: "#263238", background: "#FAFCFE", outline: "none",
+    resize: "vertical", minHeight: "80px", fontFamily: ff,
+    width: "100%", boxSizing: "border-box",
     transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   },
-  divider: {
-    height: "1px",
-    background: "#E8EEF4",
-    margin: "4px 0",
-  },
-  submitRow: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "12px",
-    paddingTop: "4px",
-  },
+  divider: { height: "1px", background: "#E8EEF7", margin: "4px 0" },
+  submitRow: { display: "flex", justifyContent: "flex-end", gap: "12px", paddingTop: "4px" },
   resetBtn: {
-    padding: "11px 28px",
-    borderRadius: "10px",
-    border: "1.5px solid #CFD8DC",
-    background: "transparent",
-    color: "#546E7A",
-    fontSize: "14px",
-    fontWeight: "500",
-    cursor: "pointer",
-    fontFamily: ff,
-    transition: "background 0.18s ease",
+    padding: "11px 28px", borderRadius: "10px", border: "1.5px solid #CFD8DC",
+    background: "transparent", color: "#546E7A", fontSize: "14px", fontWeight: "500",
+    cursor: "pointer", fontFamily: ff,
   },
   submitBtn: {
-    padding: "11px 36px",
-    borderRadius: "10px",
-    border: "none",
+    padding: "11px 36px", borderRadius: "10px", border: "none",
     background: "linear-gradient(135deg, #1565C0, #0097A7)",
-    color: "#ffffff",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
-    fontFamily: ff,
-    boxShadow: "0 4px 14px rgba(21,101,192,0.3)",
-    transition: "opacity 0.18s ease, transform 0.18s ease",
-    letterSpacing: "0.2px",
-  },
-  submitBtnHover: {
-    opacity: "0.9",
-    transform: "translateY(-1px)",
+    color: "#fff", fontSize: "14px", fontWeight: "600", cursor: "pointer",
+    fontFamily: ff, boxShadow: "0 4px 14px rgba(21,101,192,0.3)",
+    transition: "opacity 0.18s, transform 0.18s", letterSpacing: "0.2px",
   },
   successBanner: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    padding: "14px 20px",
-    borderRadius: "10px",
-    background: "#E8F5E9",
-    border: "1px solid #A5D6A7",
-    color: "#2E7D32",
-    fontSize: "14px",
-    fontWeight: "500",
-    fontFamily: ff,
+    display: "flex", alignItems: "center", gap: "10px",
+    padding: "14px 20px", borderRadius: "10px",
+    background: "#E8F5E9", border: "1px solid #A5D6A7",
+    color: "#2E7D32", fontSize: "14px", fontWeight: "500", fontFamily: ff,
   },
+  hint: { fontSize: "11px", color: "#90A4AE", marginTop: "2px", fontFamily: ff },
 };
 
-const initialForm = {
-  fullName: "",
-  age: "",
-  gender: "",
-  contact: "",
-  address: "",
-  issue: "",
+const initial = {
+  // Personal
+  fullName: "", dateOfBirth: "", age: "", gender: "", phone: "", address: "",
+  // Medical
+  complaint: "", diagnosis: "", treatment: "", notes: "",
+  // Status
+  isActive: "Active",
 };
 
 export default function PatientForm() {
-  const [form, setForm] = useState(initialForm);
-  const [focusedField, setFocusedField] = useState(null);
-  const [submitHovered, setSubmitHovered] = useState(false);
+  const [form, setForm]       = useState(initial);
+  const [focused, setFocused] = useState(null);
   const [submitted, setSubmitted] = useState(false);
+  const [submitHovered, setSubmitHovered] = useState(false);
 
-  const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    setSubmitted(false);
-  };
+  const set = (e) => { setForm((p) => ({ ...p, [e.target.name]: e.target.value })); setSubmitted(false); };
+
+  const inputStyle = (name) => ({ ...S.input, ...(focused === name ? S.inputFocus : {}) });
+  const taStyle    = (name) => ({ ...S.textarea, ...(focused === name ? S.inputFocus : {}) });
 
   const handleSubmit = () => {
-    // Validation: require all fields
-    const allFilled = Object.values(form).every((v) => v.trim() !== "");
-    if (!allFilled) {
-      alert("Please fill in all fields before submitting.");
-      return;
-    }
-    // TODO: Replace with API call — e.g. window.api.addPatient(form)
-    console.log("New Patient Submitted:", form);
+    const required = ["fullName", "dateOfBirth", "gender", "phone"];
+    const missing = required.filter((k) => !form[k].trim());
+    if (missing.length) { alert("Please fill all required fields (marked with *)."); return; }
+    // TODO: Replace with API — e.g. window.api.addPatient(form)
+    console.log("New Patient Record:", form);
     setSubmitted(true);
-    setForm(initialForm);
+    setForm(initial);
   };
-
-  const handleReset = () => {
-    setForm(initialForm);
-    setSubmitted(false);
-  };
-
-  const inputStyle = (name) => ({
-    ...styles.input,
-    ...(focusedField === name ? styles.inputFocus : {}),
-  });
-  const textareaStyle = (name) => ({
-    ...styles.textarea,
-    ...(focusedField === name ? styles.inputFocus : {}),
-  });
 
   return (
-    <div style={styles.form}>
+    <div style={S.form}>
       {submitted && (
-        <div style={styles.successBanner}>
-          <span>✅</span>
-          Patient record saved successfully. Ready for backend integration.
+        <div style={S.successBanner}>
+          ✅ Patient record saved successfully. Ready for backend integration.
         </div>
       )}
 
-      <div style={styles.row}>
-        <div style={styles.fieldGroup}>
-          <label style={styles.label}>Full Name</label>
-          <input
-            style={inputStyle("fullName")}
-            type="text"
-            name="fullName"
-            placeholder="e.g. Ahmed Raza"
-            value={form.fullName}
-            onChange={handleChange}
-            onFocus={() => setFocusedField("fullName")}
-            onBlur={() => setFocusedField(null)}
-          />
+      {/* ── Section 1: Personal Info ── */}
+      <div style={S.section}>
+        <p style={S.sectionTitle}><span>👤 Personal Information</span><span style={S.sectionLine} /></p>
+        <div style={S.row}>
+          <div style={S.field}>
+            <label style={S.label}>Full Name<span style={S.required}>*</span></label>
+            <input style={inputStyle("fullName")} type="text" name="fullName" placeholder="e.g. Ahmed Raza"
+              value={form.fullName} onChange={set} onFocus={() => setFocused("fullName")} onBlur={() => setFocused(null)} />
+          </div>
+          <div style={S.field}>
+            <label style={S.label}>Date of Birth<span style={S.required}>*</span></label>
+            <input style={inputStyle("dateOfBirth")} type="date" name="dateOfBirth"
+              value={form.dateOfBirth} onChange={set} onFocus={() => setFocused("dateOfBirth")} onBlur={() => setFocused(null)} />
+          </div>
+          <div style={S.field}>
+            <label style={S.label}>Age (years)</label>
+            <input style={inputStyle("age")} type="number" name="age" placeholder="Auto-calculated or enter" min="1" max="120"
+              value={form.age} onChange={set} onFocus={() => setFocused("age")} onBlur={() => setFocused(null)} />
+            <p style={S.hint}>Leave blank to auto-calculate from DOB</p>
+          </div>
         </div>
 
-        <div style={styles.fieldGroup}>
-          <label style={styles.label}>Age</label>
-          <input
-            style={inputStyle("age")}
-            type="number"
-            name="age"
-            placeholder="e.g. 32"
-            min="1"
-            max="120"
-            value={form.age}
-            onChange={handleChange}
-            onFocus={() => setFocusedField("age")}
-            onBlur={() => setFocusedField(null)}
-          />
-        </div>
-      </div>
-
-      <div style={styles.row}>
-        <div style={styles.fieldGroup}>
-          <label style={styles.label}>Gender</label>
-          <select
-            style={styles.select}
-            name="gender"
-            value={form.gender}
-            onChange={handleChange}
-          >
-            <option value="">Select gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </select>
+        <div style={S.row}>
+          <div style={S.field}>
+            <label style={S.label}>Gender<span style={S.required}>*</span></label>
+            <select style={S.select} name="gender" value={form.gender} onChange={set}>
+              <option value="">Select gender</option>
+              <option>Male</option><option>Female</option><option>Other</option>
+            </select>
+          </div>
+          <div style={S.field}>
+            <label style={S.label}>Phone Number<span style={S.required}>*</span></label>
+            <input style={inputStyle("phone")} type="tel" name="phone" placeholder="e.g. 0300-1234567"
+              value={form.phone} onChange={set} onFocus={() => setFocused("phone")} onBlur={() => setFocused(null)} />
+          </div>
+          <div style={S.field}>
+            <label style={S.label}>Status</label>
+            <select style={S.select} name="isActive" value={form.isActive} onChange={set}>
+              <option>Active</option><option>Inactive</option>
+            </select>
+          </div>
         </div>
 
-        <div style={styles.fieldGroup}>
-          <label style={styles.label}>Contact Number</label>
-          <input
-            style={inputStyle("contact")}
-            type="tel"
-            name="contact"
-            placeholder="e.g. 0300-1234567"
-            value={form.contact}
-            onChange={handleChange}
-            onFocus={() => setFocusedField("contact")}
-            onBlur={() => setFocusedField(null)}
-          />
+        <div style={S.fieldFull}>
+          <label style={S.label}>Full Address</label>
+          <input style={inputStyle("address")} type="text" name="address"
+            placeholder="e.g. House 12, Block B, Gulshan-e-Iqbal, Karachi"
+            value={form.address} onChange={set} onFocus={() => setFocused("address")} onBlur={() => setFocused(null)} />
         </div>
       </div>
 
-      <div style={styles.fieldGroupFull}>
-        <label style={styles.label}>Address</label>
-        <input
-          style={inputStyle("address")}
-          type="text"
-          name="address"
-          placeholder="e.g. House 12, Block B, Gulshan-e-Iqbal, Karachi"
-          value={form.address}
-          onChange={handleChange}
-          onFocus={() => setFocusedField("address")}
-          onBlur={() => setFocusedField(null)}
-        />
+      <div style={S.divider} />
+
+      {/* ── Section 2: Medical Record ── */}
+      <div style={S.section}>
+        <p style={S.sectionTitle}><span>🩺 Medical Record</span><span style={S.sectionLine} /></p>
+
+        <div style={S.fieldFull}>
+          <label style={S.label}>Complaint / Reason of Visit</label>
+          <textarea style={taStyle("complaint")} name="complaint"
+            placeholder="Patient's chief complaint in their own words..."
+            value={form.complaint} onChange={set} onFocus={() => setFocused("complaint")} onBlur={() => setFocused(null)} />
+          <p style={S.hint}>Important: Do NOT store this inside the patient table — it belongs in the Medical Record.</p>
+        </div>
+
+        <div style={S.row}>
+          <div style={S.field}>
+            <label style={S.label}>Diagnosis</label>
+            <textarea style={{ ...taStyle("diagnosis"), minHeight: "70px" }} name="diagnosis"
+              placeholder="Clinical diagnosis after examination..."
+              value={form.diagnosis} onChange={set} onFocus={() => setFocused("diagnosis")} onBlur={() => setFocused(null)} />
+          </div>
+          <div style={S.field}>
+            <label style={S.label}>Treatment Plan</label>
+            <textarea style={{ ...taStyle("treatment"), minHeight: "70px" }} name="treatment"
+              placeholder="Proposed or administered treatment..."
+              value={form.treatment} onChange={set} onFocus={() => setFocused("treatment")} onBlur={() => setFocused(null)} />
+          </div>
+        </div>
+
+        <div style={S.fieldFull}>
+          <label style={S.label}>Doctor's Notes</label>
+          <textarea style={taStyle("notes")} name="notes"
+            placeholder="Allergies, special instructions, follow-up reminders..."
+            value={form.notes} onChange={set} onFocus={() => setFocused("notes")} onBlur={() => setFocused(null)} />
+        </div>
       </div>
 
-      <div style={styles.fieldGroupFull}>
-        <label style={styles.label}>Disease / Issue</label>
-        <textarea
-          style={textareaStyle("issue")}
-          name="issue"
-          placeholder="Describe the dental issue or reason for visit..."
-          value={form.issue}
-          onChange={handleChange}
-          onFocus={() => setFocusedField("issue")}
-          onBlur={() => setFocusedField(null)}
-        />
-      </div>
+      <div style={S.divider} />
 
-      <div style={styles.divider} />
-
-      <div style={styles.submitRow}>
-        <button style={styles.resetBtn} onClick={handleReset}>
-          Clear Form
-        </button>
+      <div style={S.submitRow}>
+        <button style={S.resetBtn} onClick={() => { setForm(initial); setSubmitted(false); }}>Clear Form</button>
         <button
-          style={
-            submitHovered
-              ? { ...styles.submitBtn, ...styles.submitBtnHover }
-              : styles.submitBtn
-          }
+          style={submitHovered ? { ...S.submitBtn, opacity: 0.9, transform: "translateY(-1px)" } : S.submitBtn}
           onMouseEnter={() => setSubmitHovered(true)}
           onMouseLeave={() => setSubmitHovered(false)}
           onClick={handleSubmit}
