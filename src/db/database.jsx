@@ -44,6 +44,7 @@ class AppDatabase {
                 diagnosis TEXT,
                 treatment TEXT,
                 notes TEXT,
+                complaint_status TEXT DEFAULT 'open',
 
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 

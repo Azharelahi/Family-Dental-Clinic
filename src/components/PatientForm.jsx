@@ -85,9 +85,28 @@ export default function PatientForm() {
     const required = ["fullName", "dateOfBirth", "gender", "phone"];
     const missing = required.filter((k) => !form[k].trim());
     if (missing.length) { alert("Please fill all required fields (marked with *)."); return; }
-    // TODO: Replace with API — e.g. window.api.addPatient(form)
-    console.log("New Patient Record:", form);
-    setSubmitted(true);
+
+const patientPayload = {
+  full_name: form.fullName,
+  date_of_birth: form.dateOfBirth,
+  gender: form.gender,
+  phone: form.phone,
+  address: form.address,
+  status: form.isActive,
+};
+
+const medicalPayload = {
+  complaint: form.complaint,
+  diagnosis: form.diagnosis,
+  treatment: form.treatment,
+  notes: form.notes,
+};
+
+console.log("=== PATIENT PAYLOAD ===");
+console.table(patientPayload);
+
+console.log("=== MEDICAL PAYLOAD ===");
+console.table(medicalPayload);    setSubmitted(true);
     setForm(initial);
   };
 
