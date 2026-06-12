@@ -106,8 +106,12 @@ console.log("=== PATIENT PAYLOAD ===");
 console.table(patientPayload);
 
 console.log("=== MEDICAL PAYLOAD ===");
-console.table(medicalPayload);    setSubmitted(true);
-    setForm(initial);
+console.table(medicalPayload);
+
+window.api.addPatient({ patientPayload, medicalPayload });
+
+setSubmitted(true);
+setForm(initial);
   };
 
   return (

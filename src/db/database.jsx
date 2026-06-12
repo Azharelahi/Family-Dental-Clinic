@@ -54,6 +54,7 @@ class AppDatabase {
 
         console.log('Database initialized at:', this.dbPath);
     }
+    
 }
 
 export default AppDatabase;

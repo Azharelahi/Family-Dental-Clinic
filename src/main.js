@@ -2,6 +2,8 @@ import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import AppDatabase from './db/database';
+const {ipcMain} = require('electron');
+import {addPatient} from './db/lib.jsx';
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 let db;
 if (started) {
@@ -34,9 +36,13 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   createWindow();
+
 db = new AppDatabase();
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
+ipcMain.handle('add-patient', async (event, data) => {
+console.log("Data received in main.js:", data);
+return await addPatient(data);
+})
+ 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
