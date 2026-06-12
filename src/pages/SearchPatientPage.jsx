@@ -5,7 +5,8 @@ import AssignAppointmentModal from "../components/AssignAppointmentModal";
 import patients               from "../data/patients";
 
 const ff = "'Segoe UI', system-ui, -apple-system, sans-serif";
-
+let data = window.api.getFrequentVisitors()
+console.log("data inside this page is ",data)
 function injectKF() {
   if (document.getElementById("search-kf")) return;
   const s = document.createElement("style");

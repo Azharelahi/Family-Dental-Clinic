@@ -76,6 +76,30 @@ class AppDatabase {
 
     return insertTransaction(patientPayload, medicalPayload);
 }
+getFrequentVisitors() {
+    const query = this.db.prepare(`
+        SELECT
+            p.id,
+            p.full_name,
+            CAST((julianday('now') - julianday(p.date_of_birth)) / 365.25 AS INTEGER) AS age,
+            p.gender,
+            p.phone,
+            m.complaint,
+            m.created_at AS last_visit,
+            (SELECT COUNT(*) FROM medical_records WHERE patient_id = p.id) AS visit_count
+        FROM patients p
+        LEFT JOIN medical_records m ON m.id = (
+            SELECT id FROM medical_records
+            WHERE patient_id = p.id
+            ORDER BY created_at DESC
+            LIMIT 1
+        )
+        ORDER BY visit_count DESC, m.created_at DESC
+        LIMIT 10
+    `);
+
+    return query.all();
+}
 }
 
 export default AppDatabase;

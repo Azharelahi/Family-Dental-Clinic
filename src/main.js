@@ -3,7 +3,8 @@ import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import AppDatabase from './db/database';
 const {ipcMain} = require('electron');
-import {addPatient} from './db/lib.jsx';
+import {addPatient,getFrequentVisitors} from './db/lib.jsx';
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 let db;
 if (started) {
@@ -42,6 +43,10 @@ ipcMain.handle('add-patient', async (event, data) => {
 // console.log("Data received in main.js:", data);
 return await addPatient(data);
 })
+ipcMain.handle('get-frequent-visitors', async () => {
+  console.log("IPC 'get-frequent-visitors' invoked");
+    return await getFrequentVisitors();
+});
  
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

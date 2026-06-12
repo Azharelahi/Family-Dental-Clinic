@@ -11,3 +11,14 @@ const { patientPayload, medicalPayload } = data;
         return { success: false, error: error.message };
     }
 }
+export function getFrequentVisitors() {
+    console.log("Fetching frequent visitors from database...");
+    try {
+        const visitors = db.getFrequentVisitors();
+        console.log("Frequent visitors retrieved:", visitors);
+        return visitors;
+    } catch (error) {
+        console.error("DB query error:", error);
+        return { success: false, error: error.message };
+    }
+}
