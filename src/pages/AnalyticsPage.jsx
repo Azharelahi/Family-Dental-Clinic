@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Header from "../components/Header";
-import appointments from "../data/appointments";
+// appointments is received as a prop from App.jsx (shared state)
+// so newly assigned appointments from SearchPatientPage appear here too
+// TODO: remove prop and fetch from API → window.api.getAppointments()
 
 const ff = "'Segoe UI', system-ui, -apple-system, sans-serif";
 
@@ -156,7 +158,7 @@ const statusColors = {
   Cancelled:  { background: "#FEF2F2", color: "#C62828" },
 };
 
-export default function AnalyticsPage({ onBack }) {
+export default function AnalyticsPage({ onBack, appointments }) {
   const [period, setPeriod]           = useState("All Time");
   const [doctorFilter, setDoctorFilter] = useState("All");
   const [treatmentFilter, setTreatmentFilter] = useState("All");
