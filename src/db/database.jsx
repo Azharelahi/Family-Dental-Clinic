@@ -54,7 +54,28 @@ class AppDatabase {
 
         console.log('Database initialized at:', this.dbPath);
     }
-    
+    addPatientWithRecord(patientPayload, medicalPayload) {
+    const insertPatient = this.db.prepare(`
+        INSERT INTO patients (full_name, date_of_birth, gender, phone, address, status)
+        VALUES (@full_name, @date_of_birth, @gender, @phone, @address, @status)
+    `);
+
+    const insertRecord = this.db.prepare(`
+        INSERT INTO medical_records (patient_id, complaint, diagnosis, treatment, notes)
+        VALUES (@patient_id, @complaint, @diagnosis, @treatment, @notes)
+    `);
+
+    const insertTransaction = this.db.transaction((patientPayload, medicalPayload) => {
+        const result = insertPatient.run(patientPayload);
+        const patientId = result.lastInsertRowid;
+
+        insertRecord.run({ ...medicalPayload, patient_id: patientId });
+
+        return patientId;
+    });
+
+    return insertTransaction(patientPayload, medicalPayload);
+}
 }
 
 export default AppDatabase;
