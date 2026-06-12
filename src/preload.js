@@ -9,4 +9,5 @@ contextBridge.exposeInMainWorld('api', {
         return ipcRenderer.invoke('get-frequent-visitors');
     },
     searchPatients: (query) => ipcRenderer.invoke('search-patients', query),
+    getPatientDetails: (patientId) => ipcRenderer.invoke('get-patient-details', patientId),
 });

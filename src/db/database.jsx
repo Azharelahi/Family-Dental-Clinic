@@ -124,6 +124,47 @@ searchPatients(query) {
 
     return stmt.all(`${query}%`);
 }
+getPatientDetails(patientId) {
+    const patient = this.db.prepare(`
+        SELECT id, full_name, date_of_birth, gender, phone, address, status
+        FROM patients
+        WHERE id = ?
+    `).get(patientId);
+
+    if (!patient) return null;
+
+    const records = this.db.prepare(`
+        SELECT id, complaint, diagnosis, treatment, notes, complaint_status, created_at
+        FROM medical_records
+        WHERE patient_id = ?
+        ORDER BY created_at DESC
+    `).all(patientId);
+
+    const age = patient.date_of_birth
+        ? Math.floor((Date.now() - new Date(patient.date_of_birth)) / (365.25 * 24 * 60 * 60 * 1000))
+        : null;
+
+    const [latest, ...previous] = records;
+
+    return {
+        name: patient.full_name,
+        patientId: patient.id,
+        age,
+        gender: patient.gender,
+        phone: patient.phone,
+        address: patient.address,
+        dateOfBirth: patient.date_of_birth,
+        issue: latest?.treatment || "No recent appointment",
+        complaint: latest?.complaint || "—",
+        diagnosis: latest?.diagnosis || "—",
+        notes: latest?.notes || "",
+        previousVisits: previous.map(v => ({
+            date: v.created_at,
+            reason: v.complaint,
+            doctor: "—",
+        })),
+    };
+}
 }
 
 export default AppDatabase;

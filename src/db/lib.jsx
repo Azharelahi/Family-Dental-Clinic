@@ -17,7 +17,6 @@ export function getFrequentVisitors() {
     console.log("Fetching frequent visitors from database...");
     try {
         const visitors = db.getFrequentVisitors();
-        console.log("Frequent visitors retrieved:", visitors);
         return visitors;
     } catch (error) {
         console.error("DB query error:", error);
@@ -31,5 +30,13 @@ export function handleSearchPatients(query) {
     } catch (error) {
         console.error("Search error:", error);
         return [];
+    }
+}
+export function handleGetPatientDetails(patientId) {
+    try {
+        return db.getPatientDetails(patientId);
+    } catch (error) {
+        console.error("Get patient details error:", error);
+        return null;
     }
 }

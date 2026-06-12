@@ -174,10 +174,16 @@ export default function SearchPatientPage({ onBack, appointments, onAddAppointme
 
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2500); };
 
-  const handleRowClick = (patient, e) => {
+const handleRowClick = async (patient, e) => {
     if (e.target.closest("[data-action]")) return;
-    setViewPatient(patient);
-  };
+
+    const details = await window.api.getPatientDetails(patient.id);
+    if (details) {
+        setViewPatient(details);
+    } else {
+        showToast("⚠️ Could not load patient details");
+    }
+};
 
   const handleEditOpen = patient => {
     setEditPatient(patient);
@@ -296,12 +302,12 @@ export default function SearchPatientPage({ onBack, appointments, onAddAppointme
         )}
       </div>
 
-      {viewPatient && (
-        <PatientDetailModal
-          appointment={buildModalData(viewPatient, appointments)}
-          onClose={() => setViewPatient(null)}
-        />
-      )}
+    {viewPatient && (
+    <PatientDetailModal
+        appointment={viewPatient}
+        onClose={() => setViewPatient(null)}
+    />
+)}
 
       {assignPatient && (
         <AssignAppointmentModal
