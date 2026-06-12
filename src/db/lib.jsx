@@ -14,7 +14,6 @@ export function addPatient(data){
 }
 
 export function getFrequentVisitors() {
-    console.log("Fetching frequent visitors from database...");
     try {
         const visitors = db.getFrequentVisitors();
         return visitors;
