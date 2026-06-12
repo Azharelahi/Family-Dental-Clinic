@@ -39,7 +39,7 @@ app.whenReady().then(() => {
 
 db = new AppDatabase();
 ipcMain.handle('add-patient', async (event, data) => {
-console.log("Data received in main.js:", data);
+// console.log("Data received in main.js:", data);
 return await addPatient(data);
 })
  

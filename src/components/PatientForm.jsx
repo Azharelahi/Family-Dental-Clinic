@@ -81,7 +81,7 @@ export default function PatientForm() {
   const inputStyle = (name) => ({ ...S.input, ...(focused === name ? S.inputFocus : {}) });
   const taStyle    = (name) => ({ ...S.textarea, ...(focused === name ? S.inputFocus : {}) });
 
-  const handleSubmit = () => {
+  const handleSubmit = async() => {
     const required = ["fullName", "dateOfBirth", "gender", "phone"];
     const missing = required.filter((k) => !form[k].trim());
     if (missing.length) { alert("Please fill all required fields (marked with *)."); return; }
@@ -102,16 +102,22 @@ const medicalPayload = {
   notes: form.notes,
 };
 
-console.log("=== PATIENT PAYLOAD ===");
-console.table(patientPayload);
+// console.log("=== PATIENT PAYLOAD ===");
+// console.table(patientPayload);
 
-console.log("=== MEDICAL PAYLOAD ===");
-console.table(medicalPayload);
+// console.log("=== MEDICAL PAYLOAD ===");
+// console.table(medicalPayload);
 
-window.api.addPatient({ patientPayload, medicalPayload });
+ const result = await window.api.addPatient({ patientPayload, medicalPayload });
 
-setSubmitted(true);
-setForm(initial);
+    if (result.success) {
+        alert("Data Saved Successfully");
+        setSubmitted(true);
+        setForm(initial);
+    } else {
+        alert(result.message + ": " + result.error);
+    }
+
   };
 
   return (
