@@ -5,8 +5,7 @@ import AssignAppointmentModal from "../components/AssignAppointmentModal";
 import patients               from "../data/patients";
 
 const ff = "'Segoe UI', system-ui, -apple-system, sans-serif";
-// let data = window.api.getFrequentVisitors()
-// console.log("data inside this page is ",data)
+
 function injectKF() {
   if (document.getElementById("search-kf")) return;
   const s = document.createElement("style");
@@ -27,11 +26,6 @@ function formatDate(d) {
   return new Date(d).toLocaleDateString("en-PK",{day:"numeric",month:"short",year:"numeric"});
 }
 
-/**
- * Build the object PatientDetailModal expects.
- * Combines patient registry data + their most recent appointment from shared state.
- * TODO: Replace with → window.api.getPatientWithHistory(patientId)
- */
 function buildModalData(patient, allAppointments) {
   const appts = allAppointments
     .filter(a => a.patientId === patient.patientId)
@@ -54,7 +48,6 @@ function buildModalData(patient, allAppointments) {
   };
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
 const S = {
   page:    { minHeight:"100vh", background:"#F0F4F8", display:"flex", flexDirection:"column", fontFamily:ff },
   content: { flex:1, padding:"40px 60px", display:"flex", flexDirection:"column", gap:"24px", width:"100%", maxWidth:"1160px", margin:"0 auto", boxSizing:"border-box" },
@@ -86,7 +79,6 @@ const S = {
   cellBlue:  { fontSize:"13px", color:"#0097A7", fontWeight:"600", margin:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" },
   cellMuted: { fontSize:"12px", color:"#90A4AE", margin:0, whiteSpace:"nowrap" },
 
-  // 2x2 action grid
   actionGrid: { display:"grid", gridTemplateColumns:"1fr 1fr", gap:"4px", width:"68px" },
   actionBtn:  { width:"32px", height:"32px", borderRadius:"7px", border:"1px solid #E8EEF7", background:"#F8FAFC", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", fontSize:"14px", transition:"background 0.14s, border-color 0.14s, transform 0.14s", flexShrink:0 },
 
@@ -120,7 +112,6 @@ const S = {
   toast: { position:"fixed", bottom:"28px", right:"28px", background:"#1A2E4A", color:"#fff", padding:"12px 20px", borderRadius:"12px", fontSize:"13px", fontWeight:"500", boxShadow:"0 8px 24px rgba(10,30,60,0.25)", zIndex:2000, display:"flex", alignItems:"center", gap:"8px" },
 };
 
-// Single square action button
 function ActionBtn({ title, emoji, hoverBg, hoverBorder, onClick }) {
   const [hov, setHov] = useState(false);
   return (
@@ -151,31 +142,35 @@ export default function SearchPatientPage({ onBack, appointments, onAddAppointme
   const [editPatient,   setEditPatient]   = useState(null);
   const [editForm,      setEditForm]      = useState({});
   const [toast,         setToast]         = useState(null);
-const [data, setData] = useState([]);
+  const [data, setData] = useState([]);
 
-useEffect(() => {
-  const load = async () => {
-    const result = await window.api.getFrequentVisitors();
+  useEffect(() => {
+    let active = true;
 
-    const formatted = result.map(p => ({
-      id: p.id,
-      patientId: p.patientId,
-      name: p.name || p.full_name,
-      age: p.age,
-      gender: p.gender,
-      phone: p.phone,
-      lastIssue:p.complaint,
-      lastVisit: p.last_visit || p.lastVisit,
-    }));
+    const load = async () => {
+      const result = query.trim() === ""
+        ? await window.api.getFrequentVisitors()
+        : await window.api.searchPatients(query.trim());
 
-    setData(formatted);
-  };
+      const formatted = (result || []).map(p => ({
+        id: p.id,
+        patientId: p.patientId,
+        name: p.name || p.full_name,
+        age: p.age,
+        gender: p.gender,
+        phone: p.phone,
+        address: p.address,
+        lastIssue: p.complaint,
+        lastVisit: p.last_visit || p.lastVisit,
+      }));
 
-  load();
-}, []);
-  const filtered = query.trim()
-    ? patientList.filter(p => p.name.toLowerCase().includes(query.toLowerCase()))
-    : patientList;
+      if (active) setData(formatted);
+    };
+
+    load();
+
+    return () => { active = false; };
+  }, [query]);
 
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 2500); };
 
@@ -190,7 +185,7 @@ useEffect(() => {
   };
 
   const handleEditSave = () => {
-    setPatientList(prev => prev.map(p => p.id === editPatient.id ? { ...p, ...editForm } : p));
+    setData(prev => prev.map(p => p.id === editPatient.id ? { ...p, ...editForm } : p));
     // TODO: window.api.updatePatient(editPatient.patientId, editForm)
     setEditPatient(null);
     showToast("✅ Patient info updated successfully");
@@ -202,7 +197,7 @@ useEffect(() => {
   };
 
   const handleDelete = patient => {
-    setPatientList(prev => prev.filter(p => p.id !== patient.id));
+    setData(prev => prev.filter(p => p.id !== patient.id));
     setDeletePatient(null);
     // TODO: window.api.deletePatient(patient.patientId)
     showToast(`🗑️ ${patient.name} removed from records`);
@@ -228,7 +223,6 @@ useEffect(() => {
           <p style={S.pageDesc}>Click any row to view full details &amp; history. Use action buttons to manage each patient.</p>
         </div>
 
-        {/* Search bar */}
         <div style={S.searchCard}>
           <div style={S.searchWrap}>
             <span style={S.searchIcon}>🔍</span>
@@ -242,17 +236,15 @@ useEffect(() => {
           <button style={S.searchBtn}>Search</button>
         </div>
 
-        {/* Meta */}
         <div style={S.metaRow}>
           <p style={S.resultCount}>
-            Showing <span style={S.highlight}>{filtered.length}</span> of {patientList.length} patients
+            Showing <span style={S.highlight}>{data.length}</span> patients
             {query && <> matching <span style={S.highlight}>"{query}"</span></>}
           </p>
           {query && <button style={S.clearBtn} onClick={() => setQuery("")}>✕ Clear filter</button>}
         </div>
 
-        {/* Table */}
-        {filtered.length > 0 ? (
+        {data.length > 0 ? (
           <div style={S.tableWrap}>
             <div style={S.tableHead}>
               <p style={S.th}></p>
@@ -265,7 +257,7 @@ useEffect(() => {
               <p style={{ ...S.th, textAlign:"center" }}>Actions</p>
             </div>
 
-            {(data || []).map(p => (
+            {data.map(p => (
               <div
                 key={p.id}
                 style={{ ...S.row, ...(hoveredRow === p.id ? S.rowHover : {}) }}
@@ -283,11 +275,9 @@ useEffect(() => {
                 <p style={{ ...S.cell, fontSize:"12px" }}>{p.phone}</p>
                 <p style={S.cellBlue}>
                 {p.lastIssue}
-                  {/* {(appointments.find(a => a.patientId === p.patientId) || {}).issue || "—"} */}
                 </p>
                 <p style={S.cellMuted}>{formatDate(p.lastVisit)}</p>
 
-                {/* ── 2×2 Action button group ── */}
                 <div style={S.actionGrid}>
                   <ActionBtn title="Edit patient info"                       emoji="✏️" hoverBg="#EFF8FF" hoverBorder="#93C5FD" onClick={() => handleEditOpen(p)} />
                   <ActionBtn title="Assign new appointment"                  emoji="📅" hoverBg="#F0FDF4" hoverBorder="#86EFAC" onClick={() => setAssignPatient(p)} />
@@ -306,7 +296,6 @@ useEffect(() => {
         )}
       </div>
 
-      {/* Patient Detail Modal */}
       {viewPatient && (
         <PatientDetailModal
           appointment={buildModalData(viewPatient, appointments)}
@@ -314,7 +303,6 @@ useEffect(() => {
         />
       )}
 
-      {/* Assign Appointment Modal */}
       {assignPatient && (
         <AssignAppointmentModal
           patient={assignPatient}
@@ -323,7 +311,6 @@ useEffect(() => {
         />
       )}
 
-      {/* Edit Patient Modal */}
       {editPatient && (
         <div style={S.overlay} onClick={() => setEditPatient(null)}>
           <div style={S.editBox} onClick={e => e.stopPropagation()}>
@@ -367,7 +354,6 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Delete Confirm */}
       {deletePatient && (
         <div style={S.overlay} onClick={() => setDeletePatient(null)}>
           <div style={S.confirmBox} onClick={e => e.stopPropagation()}>
@@ -382,7 +368,6 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Toast */}
       {toast && <div style={S.toast}>{toast}</div>}
     </div>
   );

@@ -100,6 +100,30 @@ getFrequentVisitors() {
 
     return query.all();
 }
+searchPatients(query) {
+    const stmt = this.db.prepare(`
+        SELECT
+            p.id,
+            p.full_name,
+            CAST((julianday('now') - julianday(p.date_of_birth)) / 365.25 AS INTEGER) AS age,
+            p.gender,
+            p.phone,
+            m.complaint,
+            m.created_at AS last_visit
+        FROM patients p
+        LEFT JOIN medical_records m ON m.id = (
+            SELECT id FROM medical_records
+            WHERE patient_id = p.id
+            ORDER BY created_at DESC
+            LIMIT 1
+        )
+        WHERE p.full_name LIKE ?
+        ORDER BY p.full_name ASC
+        LIMIT 20
+    `);
+
+    return stmt.all(`${query}%`);
+}
 }
 
 export default AppDatabase;

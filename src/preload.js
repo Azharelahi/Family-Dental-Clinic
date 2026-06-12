@@ -7,5 +7,6 @@ contextBridge.exposeInMainWorld('api', {
 
     getFrequentVisitors: () => {
         return ipcRenderer.invoke('get-frequent-visitors');
-    }
+    },
+    searchPatients: (query) => ipcRenderer.invoke('search-patients', query),
 });

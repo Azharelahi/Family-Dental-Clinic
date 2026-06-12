@@ -1,7 +1,8 @@
 import AppDatabase from "./database";
 let db = new AppDatabase();
+
 export function addPatient(data){
-const { patientPayload, medicalPayload } = data;
+    const { patientPayload, medicalPayload } = data;
 
     try {
         const patientId = db.addPatientWithRecord(patientPayload, medicalPayload);
@@ -11,6 +12,7 @@ const { patientPayload, medicalPayload } = data;
         return { success: false, error: error.message };
     }
 }
+
 export function getFrequentVisitors() {
     console.log("Fetching frequent visitors from database...");
     try {
@@ -20,5 +22,14 @@ export function getFrequentVisitors() {
     } catch (error) {
         console.error("DB query error:", error);
         return { success: false, error: error.message };
+    }
+}
+
+export function handleSearchPatients(query) {
+    try {
+        return db.searchPatients(query);
+    } catch (error) {
+        console.error("Search error:", error);
+        return [];
     }
 }
