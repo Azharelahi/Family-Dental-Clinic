@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header                 from "../components/Header";
 import PatientDetailModal     from "../components/PatientDetailModal";
 import AssignAppointmentModal from "../components/AssignAppointmentModal";
 import patients               from "../data/patients";
 
 const ff = "'Segoe UI', system-ui, -apple-system, sans-serif";
-let data = window.api.getFrequentVisitors()
-console.log("data inside this page is ",data)
+// let data = window.api.getFrequentVisitors()
+// console.log("data inside this page is ",data)
 function injectKF() {
   if (document.getElementById("search-kf")) return;
   const s = document.createElement("style");
@@ -151,7 +151,28 @@ export default function SearchPatientPage({ onBack, appointments, onAddAppointme
   const [editPatient,   setEditPatient]   = useState(null);
   const [editForm,      setEditForm]      = useState({});
   const [toast,         setToast]         = useState(null);
+const [data, setData] = useState([]);
 
+useEffect(() => {
+  const load = async () => {
+    const result = await window.api.getFrequentVisitors();
+
+    const formatted = result.map(p => ({
+      id: p.id,
+      patientId: p.patientId,
+      name: p.name || p.full_name,
+      age: p.age,
+      gender: p.gender,
+      phone: p.phone,
+      lastIssue:p.complaint,
+      lastVisit: p.last_visit || p.lastVisit,
+    }));
+
+    setData(formatted);
+  };
+
+  load();
+}, []);
   const filtered = query.trim()
     ? patientList.filter(p => p.name.toLowerCase().includes(query.toLowerCase()))
     : patientList;
@@ -244,7 +265,7 @@ export default function SearchPatientPage({ onBack, appointments, onAddAppointme
               <p style={{ ...S.th, textAlign:"center" }}>Actions</p>
             </div>
 
-            {filtered.map(p => (
+            {(data || []).map(p => (
               <div
                 key={p.id}
                 style={{ ...S.row, ...(hoveredRow === p.id ? S.rowHover : {}) }}
@@ -256,12 +277,13 @@ export default function SearchPatientPage({ onBack, appointments, onAddAppointme
                 <div style={{ ...S.avatar, background: AVATAR_COLORS[p.id % AVATAR_COLORS.length] }}>
                   {getInitials(p.name)}
                 </div>
-                <p style={S.cell}>{p.name}</p>
+                <p style={S.cell}>{p.name} </p>
                 <p style={S.cell}>{p.age} yrs</p>
                 <p style={S.cell}>{p.gender}</p>
                 <p style={{ ...S.cell, fontSize:"12px" }}>{p.phone}</p>
                 <p style={S.cellBlue}>
-                  {(appointments.find(a => a.patientId === p.patientId) || {}).issue || "—"}
+                {p.lastIssue}
+                  {/* {(appointments.find(a => a.patientId === p.patientId) || {}).issue || "—"} */}
                 </p>
                 <p style={S.cellMuted}>{formatDate(p.lastVisit)}</p>
 
