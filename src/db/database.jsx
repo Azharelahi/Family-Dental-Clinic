@@ -51,6 +51,24 @@ class AppDatabase {
                 FOREIGN KEY (patient_id) REFERENCES patients(id)
             )
         `);
+        this.db.exec(`
+    CREATE TABLE IF NOT EXISTS appointments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        medical_record_id INTEGER NOT NULL,
+        patient_id INTEGER NOT NULL,
+
+        appointment_date DATE NOT NULL,
+        appointment_time TEXT,
+        purpose TEXT,
+        status TEXT DEFAULT 'scheduled',
+
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+        FOREIGN KEY (medical_record_id) REFERENCES medical_records(id),
+        FOREIGN KEY (patient_id) REFERENCES patients(id)
+    )
+`);
 
         console.log('Database initialized at:', this.dbPath);
     }

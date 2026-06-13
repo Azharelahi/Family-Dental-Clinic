@@ -19,27 +19,6 @@ function injectKeyframes() {
   document.head.appendChild(s);
 }
 
-const DOCTORS = [
-  "Dr. Saima Malik",
-  "Dr. Hassan Qureshi",
-  "Dr. Bilal Siddiqui",
-];
-
-const TREATMENTS = [
-  "Root Canal",
-  "Teeth Whitening",
-  "Cavity Filling",
-  "Braces Checkup",
-  "Tooth Extraction",
-  "Gum Treatment",
-  "Dental X-Ray",
-  "Scaling & Polishing",
-  "Crown Placement",
-  "Wisdom Tooth Consultation",
-  "Routine Checkup",
-  "Other",
-];
-
 const S = {
   overlay: {
     position: "fixed", inset: 0,
@@ -53,7 +32,7 @@ const S = {
   modal: {
     background: "#fff",
     borderRadius: "22px",
-    width: "500px",
+    width: "440px",
     maxWidth: "95vw",
     maxHeight: "90vh",
     overflow: "hidden",
@@ -115,18 +94,6 @@ const S = {
     borderColor: "#0097A7",
     boxShadow: "0 0 0 3px rgba(0,151,167,0.1)",
   },
-  select: {
-    padding: "10px 13px", borderRadius: "10px",
-    border: "1.5px solid #CFD8DC", fontSize: "13px",
-    color: "#263238", background: "#FAFCFE",
-    outline: "none", fontFamily: ff, cursor: "pointer",
-    width: "100%", boxSizing: "border-box",
-    appearance: "none",
-    backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23546E7A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")",
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "right 13px center",
-    paddingRight: "34px",
-  },
   textarea: {
     padding: "10px 13px", borderRadius: "10px",
     border: "1.5px solid #CFD8DC", fontSize: "13px",
@@ -161,16 +128,13 @@ function getInitials(name) {
 }
 
 const emptyForm = {
-  date: "",
-  time: "",
-  doctor: DOCTORS[0],
-  issue: "",
-  complaint: "",
-  notes: "",
+  appointment_date: "",
+  appointment_time: "",
+  purpose: "",
 };
 
-export default function AssignAppointmentModal({ patient, onSave, onClose }) {
-  const [form, setForm]     = useState(emptyForm);
+export default function AssignAppointmentModal({ patient, medicalRecordId, onSave, onClose }) {
+  const [form, setForm]       = useState(emptyForm);
   const [focused, setFocused] = useState(null);
 
   useEffect(() => {
@@ -185,38 +149,20 @@ export default function AssignAppointmentModal({ patient, onSave, onClose }) {
   const taStyle    = (name) => ({ ...S.textarea, ...(focused === name ? S.inputFocus : {}) });
 
   const handleSave = () => {
-    if (!form.date || !form.time || !form.issue) {
-      alert("Please fill in Date, Time, and Treatment.");
+    if (!form.appointment_date || !form.appointment_time) {
+      alert("Please fill in Date and Time.");
       return;
     }
 
-    /**
-     * New appointment object — mirrors the DB schema.
-     * TODO: Replace with API call → window.api.createAppointment(payload)
-     * The `id` will be assigned by the backend; using Date.now() as temp client ID.
-     */
-    const newAppointment = {
-      id:          Date.now(),
-      patientId:   patient.patientId,
-      name:        patient.name,
-      age:         patient.age,
-      gender:      patient.gender,
-      phone:       patient.phone,
-      address:     patient.address,
-      dateOfBirth: patient.dateOfBirth,
-      date:        form.date,
-      time:        form.time,
-      doctor:      form.doctor,
-      issue:       form.issue,
-      complaint:   form.complaint,
-      diagnosis:   "",
-      treatment:   form.issue,
-      notes:       form.notes,
-      status:      "Scheduled",
-      previousVisits: [],
+    const payload = {
+      medical_record_id: medicalRecordId,
+      patient_id: patient.patientId,
+      appointment_date: form.appointment_date,
+      appointment_time: form.appointment_time,
+      purpose: form.purpose,
     };
 
-    onSave(newAppointment);
+    onSave(payload);
     onClose();
   };
 
@@ -224,16 +170,14 @@ export default function AssignAppointmentModal({ patient, onSave, onClose }) {
     <div style={S.overlay} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={S.modal}>
 
-        {/* Header */}
         <div style={S.header}>
           <div style={S.headerLeft}>
             <p style={S.headerTitle}>📅 Assign New Appointment</p>
-            <p style={S.headerSub}>Schedule a visit for this patient</p>
+            <p style={S.headerSub}>Schedule a follow up visit</p>
           </div>
           <button style={S.closeBtn} onClick={onClose}>✕</button>
         </div>
 
-        {/* Patient banner */}
         <div style={S.patientBanner}>
           <div style={S.patientAvatar}>{getInitials(patient.name)}</div>
           <div>
@@ -242,65 +186,38 @@ export default function AssignAppointmentModal({ patient, onSave, onClose }) {
           </div>
         </div>
 
-        {/* Form */}
         <div style={S.body}>
           <div style={S.row}>
             <div style={S.field}>
               <label style={S.label}>Date <span style={S.required}>*</span></label>
               <input
-                style={inputStyle("date")} type="date" name="date"
-                value={form.date} onChange={set}
-                onFocus={() => setFocused("date")} onBlur={() => setFocused(null)}
+                style={inputStyle("appointment_date")} type="date" name="appointment_date"
+                value={form.appointment_date} onChange={set}
+                onFocus={() => setFocused("appointment_date")} onBlur={() => setFocused(null)}
               />
             </div>
             <div style={S.field}>
               <label style={S.label}>Time <span style={S.required}>*</span></label>
               <input
-                style={inputStyle("time")} type="text" name="time"
+                style={inputStyle("appointment_time")} type="text" name="appointment_time"
                 placeholder="e.g. 10:30 AM"
-                value={form.time} onChange={set}
-                onFocus={() => setFocused("time")} onBlur={() => setFocused(null)}
+                value={form.appointment_time} onChange={set}
+                onFocus={() => setFocused("appointment_time")} onBlur={() => setFocused(null)}
               />
             </div>
           </div>
 
           <div style={S.field}>
-            <label style={S.label}>Attending Doctor</label>
-            <select style={S.select} name="doctor" value={form.doctor} onChange={set}>
-              {DOCTORS.map((d) => <option key={d}>{d}</option>)}
-            </select>
-          </div>
-
-          <div style={S.field}>
-            <label style={S.label}>Treatment / Issue <span style={S.required}>*</span></label>
-            <select style={S.select} name="issue" value={form.issue} onChange={set}>
-              <option value="">Select treatment type</option>
-              {TREATMENTS.map((t) => <option key={t}>{t}</option>)}
-            </select>
-          </div>
-
-          <div style={S.field}>
-            <label style={S.label}>Patient Complaint</label>
+            <label style={S.label}>Purpose</label>
             <textarea
-              style={taStyle("complaint")} name="complaint"
-              placeholder="Brief description of the patient's complaint..."
-              value={form.complaint} onChange={set}
-              onFocus={() => setFocused("complaint")} onBlur={() => setFocused(null)}
-            />
-          </div>
-
-          <div style={S.field}>
-            <label style={S.label}>Additional Notes</label>
-            <textarea
-              style={{ ...taStyle("notes"), minHeight: "60px" }} name="notes"
-              placeholder="Any special instructions or notes..."
-              value={form.notes} onChange={set}
-              onFocus={() => setFocused("notes")} onBlur={() => setFocused(null)}
+              style={taStyle("purpose")} name="purpose"
+              placeholder="e.g. Routine checkup 1 of 3 after RCT"
+              value={form.purpose} onChange={set}
+              onFocus={() => setFocused("purpose")} onBlur={() => setFocused(null)}
             />
           </div>
         </div>
 
-        {/* Footer */}
         <div style={S.footer}>
           <button style={S.cancelBtn} onClick={onClose}>Cancel</button>
           <button style={S.saveBtn} onClick={handleSave}>
