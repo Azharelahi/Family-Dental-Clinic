@@ -3,7 +3,7 @@ import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import AppDatabase from './db/database';
 const {ipcMain} = require('electron');
-import {addPatient,getFrequentVisitors,handleSearchPatients, handleGetPatientDetails } from './db/lib.jsx';
+import {addPatient,getFrequentVisitors,handleSearchPatients, handleGetPatientDetails ,handleCreateAppointment} from './db/lib.jsx';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 let db;
@@ -52,6 +52,9 @@ ipcMain.handle('search-patients', (event, query) => {
 });
 ipcMain.handle('get-patient-details', (event, patientId) => {
     return handleGetPatientDetails(patientId);
+});
+ipcMain.handle('create-appointment', (event, data) => {
+    return handleCreateAppointment(data);
 });
  
   app.on('activate', () => {

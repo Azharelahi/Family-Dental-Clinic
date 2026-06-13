@@ -39,3 +39,31 @@ export function handleGetPatientDetails(patientId) {
         return null;
     }
 }
+export function handleCreateAppointment(data) {
+    const { name, phone, appointment_date, appointment_time, purpose } = data;
+
+    try {
+        const patientId = db.getPatientIdByNameAndPhone(name, phone);
+        if (!patientId) {
+            return { success: false, error: "Patient not found" };
+        }
+
+        const medicalRecordId = db.getLatestMedicalRecordId(patientId);
+        if (!medicalRecordId) {
+            return { success: false, error: "No medical record found for patient" };
+        }
+
+        const appointmentId = db.addAppointment({
+            medical_record_id: medicalRecordId,
+            patient_id: patientId,
+            appointment_date,
+            appointment_time,
+            purpose,
+        });
+
+        return { success: true, appointmentId, message: "Appointment scheduled successfully" };
+    } catch (error) {
+        console.error("Create appointment error:", error);
+        return { success: false, error: error.message };
+    }
+}

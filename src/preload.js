@@ -10,4 +10,5 @@ contextBridge.exposeInMainWorld('api', {
     },
     searchPatients: (query) => ipcRenderer.invoke('search-patients', query),
     getPatientDetails: (patientId) => ipcRenderer.invoke('get-patient-details', patientId),
+    createAppointment: (data) => ipcRenderer.invoke('create-appointment', data),
 });

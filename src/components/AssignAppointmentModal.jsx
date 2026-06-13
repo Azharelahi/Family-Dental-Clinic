@@ -133,7 +133,7 @@ const emptyForm = {
   purpose: "",
 };
 
-export default function AssignAppointmentModal({ patient, medicalRecordId, onSave, onClose }) {
+export default function AssignAppointmentModal({ patient, onSave, onClose }) {
   const [form, setForm]       = useState(emptyForm);
   const [focused, setFocused] = useState(null);
 
@@ -148,22 +148,28 @@ export default function AssignAppointmentModal({ patient, medicalRecordId, onSav
   const inputStyle = (name) => ({ ...S.input,    ...(focused === name ? S.inputFocus : {}) });
   const taStyle    = (name) => ({ ...S.textarea, ...(focused === name ? S.inputFocus : {}) });
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.appointment_date || !form.appointment_time) {
       alert("Please fill in Date and Time.");
       return;
     }
 
     const payload = {
-      medical_record_id: medicalRecordId,
-      patient_id: patient.patientId,
+      name: patient.name,
+      phone: patient.phone,
       appointment_date: form.appointment_date,
       appointment_time: form.appointment_time,
       purpose: form.purpose,
     };
 
-    onSave(payload);
-    onClose();
+    const result = await window.api.createAppointment(payload);
+
+    if (result.success) {
+      onSave(result);
+      onClose();
+    } else {
+      alert(result.error);
+    }
   };
 
   return (

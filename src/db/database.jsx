@@ -183,6 +183,35 @@ getPatientDetails(patientId) {
         })),
     };
 }
+getPatientIdByNameAndPhone(name, phone) {
+    const row = this.db.prepare(`
+        SELECT id FROM patients
+        WHERE full_name = ? AND phone = ?
+    `).get(name, phone);
+
+    return row ? row.id : null;
+}
+
+getLatestMedicalRecordId(patientId) {
+    const row = this.db.prepare(`
+        SELECT id FROM medical_records
+        WHERE patient_id = ?
+        ORDER BY created_at DESC
+        LIMIT 1
+    `).get(patientId);
+
+    return row ? row.id : null;
+}
+
+addAppointment(payload) {
+    const insert = this.db.prepare(`
+        INSERT INTO appointments (medical_record_id, patient_id, appointment_date, appointment_time, purpose)
+        VALUES (@medical_record_id, @patient_id, @appointment_date, @appointment_time, @purpose)
+    `);
+
+    const result = insert.run(payload);
+    return result.lastInsertRowid;
+}
 }
 
 export default AppDatabase;
