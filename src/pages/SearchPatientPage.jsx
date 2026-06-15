@@ -202,17 +202,23 @@ const handleRowClick = async (patient, e) => {
     showToast(`✅ Latest appointment for ${patient.name} marked as completed`);
   };
 
-  const handleDelete = patient => {
-    setData(prev => prev.filter(p => p.id !== patient.id));
-    setDeletePatient(null);
-    // TODO: window.api.deletePatient(patient.patientId)
-    showToast(`🗑️ ${patient.name} removed from records`);
-  };
+const handleDelete = async (patient) => {
+    const result = await window.api.deletePatient(patient.id);
+
+    if (result.success) {
+        setData(prev => prev.filter(p => p.id !== patient.id));
+        setDeletePatient(null);
+        showToast(`🗑️ ${patient.name} removed from records`);
+    } else {
+        setDeletePatient(null);
+        showToast(`⚠️ ${result.error}`);
+    }
+};
 
   const handleAssignSave = newAppointment => {
     onAddAppointment(newAppointment);
     // TODO: window.api.createAppointment(newAppointment)
-    showToast(`📅 New appointment assigned for ${newAppointment.name}`);
+    showToast(`📅 New appointment assigned`);
   };
 
   return (

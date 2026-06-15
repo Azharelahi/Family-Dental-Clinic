@@ -67,3 +67,15 @@ export function handleCreateAppointment(data) {
         return { success: false, error: error.message };
     }
 }
+export function handleDeletePatient(patientId) {
+    try {
+        const changes = db.deletePatientCascade(patientId);
+        if (changes === 0) {
+            return { success: false, error: "Patient not found" };
+        }
+        return { success: true, message: "Patient deleted successfully" };
+    } catch (error) {
+        console.error("Delete patient error:", error);
+        return { success: false, error: error.message };
+    }
+}

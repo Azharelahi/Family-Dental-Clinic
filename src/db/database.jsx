@@ -212,6 +212,20 @@ addAppointment(payload) {
     const result = insert.run(payload);
     return result.lastInsertRowid;
 }
+deletePatientCascade(patientId) {
+    const deleteAppointments = this.db.prepare(`DELETE FROM appointments WHERE patient_id = ?`);
+    const deleteMedicalRecords = this.db.prepare(`DELETE FROM medical_records WHERE patient_id = ?`);
+    const deletePatient = this.db.prepare(`DELETE FROM patients WHERE id = ?`);
+
+    const transaction = this.db.transaction((patientId) => {
+        deleteAppointments.run(patientId);
+        deleteMedicalRecords.run(patientId);
+        const result = deletePatient.run(patientId);
+        return result.changes;
+    });
+
+    return transaction(patientId);
+}
 }
 
 export default AppDatabase;
