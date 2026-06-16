@@ -159,27 +159,25 @@ const statusColors = {
 };
 
 export default function AnalyticsPage({ onBack, appointments }) {
-  const [period, setPeriod]           = useState("All Time");
+  const [period, setPeriod]             = useState("All Time");
   const [doctorFilter, setDoctorFilter] = useState("All");
-  const [treatmentFilter, setTreatmentFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+
+  // Fixed doctor list matching actual clinic staff
+  const CLINIC_DOCTORS = ["Kainat Niaz", "Nida Niaz", "Azhar Elahi"];
 
   // Apply period filter
   let filtered = filterByPeriod(appointments, period);
 
-  // Apply secondary filters
-  if (doctorFilter !== "All")    filtered = filtered.filter((a) => a.doctor === doctorFilter);
-  if (treatmentFilter !== "All") filtered = filtered.filter((a) => a.issue === treatmentFilter);
-  if (statusFilter !== "All")    filtered = filtered.filter((a) => (a.status || "Scheduled") === statusFilter);
+  // Apply secondary filters (treatment filter removed)
+  if (doctorFilter !== "All") filtered = filtered.filter((a) => a.doctor === doctorFilter);
+  if (statusFilter !== "All") filtered = filtered.filter((a) => (a.status || "Scheduled") === statusFilter);
 
   // Aggregations
   const byDoctor    = groupBy(filtered, "doctor");
   const byTreatment = groupBy(filtered, "issue");
   const byStatus    = groupBy(filtered.map((a) => ({ ...a, status: a.status || "Scheduled" })), "status");
   const byGender    = groupBy(filtered, "gender");
-
-  const allDoctors    = [...new Set(appointments.map((a) => a.doctor))];
-  const allTreatments = [...new Set(appointments.map((a) => a.issue))];
 
   return (
     <div style={S.page}>
@@ -225,23 +223,17 @@ export default function AnalyticsPage({ onBack, appointments }) {
         <div style={S.filterSection}>
           <p style={S.filterTitle}>🔽 Filters</p>
 
+          {/* Doctor filter — fixed clinic staff names */}
           <div style={S.filterRow}>
             <span style={S.filterGroupLabel}>Doctor</span>
-            {["All", ...allDoctors].map((d) => (
+            {["All", ...CLINIC_DOCTORS].map((d) => (
               <button key={d} style={doctorFilter === d ? { ...S.chip, ...S.chipActive } : S.chip} onClick={() => setDoctorFilter(d)}>
-                {d === "All" ? "All Doctors" : d.replace("Dr. ", "")}
+                {d === "All" ? "All Doctors" : d}
               </button>
             ))}
           </div>
 
-          <div style={S.filterRow}>
-            <span style={S.filterGroupLabel}>Treatment</span>
-            {["All", ...allTreatments].map((t) => (
-              <button key={t} style={treatmentFilter === t ? { ...S.chip, ...S.chipActive } : S.chip} onClick={() => setTreatmentFilter(t)}>
-                {t === "All" ? "All Treatments" : t}
-              </button>
-            ))}
-          </div>
+          {/* Treatment filter removed as per requirement */}
 
           <div style={S.filterRow}>
             <span style={S.filterGroupLabel}>Status</span>

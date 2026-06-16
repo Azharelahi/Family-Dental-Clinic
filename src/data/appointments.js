@@ -2,6 +2,10 @@
  * appointments.js — Extended dummy data
  * Each record mirrors the planned DB schema:
  *   Patient + MedicalRecord + Appointment tables
+ *
+ * Doctor names updated to actual clinic staff:
+ *   Kainat Niaz | Nida Niaz | Azhar Elahi
+ *
  * TODO: Replace with API calls — e.g. window.api.getAppointments()
  */
 
@@ -17,7 +21,7 @@ const appointments = [
     dateOfBirth: "1992-03-15",
     date: "2026-06-18",
     time: "10:00 AM",
-    doctor: "Dr. Saima Malik",
+    doctor: "Kainat Niaz",
     issue: "Root Canal",
     complaint: "Severe pain in lower-left molar for 3 days",
     diagnosis: "Infected pulp — requires root canal therapy",
@@ -25,8 +29,8 @@ const appointments = [
     notes: "Patient allergic to penicillin. Use amoxicillin alternative.",
     status: "Scheduled",
     previousVisits: [
-      { date: "2025-12-10", reason: "Routine Checkup", doctor: "Dr. Saima Malik" },
-      { date: "2025-08-22", reason: "Cavity Filling", doctor: "Dr. Hassan Qureshi" },
+      { date: "2025-12-10", reason: "Routine Checkup", doctor: "Kainat Niaz" },
+      { date: "2025-08-22", reason: "Cavity Filling",  doctor: "Nida Niaz" },
     ],
   },
   {
@@ -40,7 +44,7 @@ const appointments = [
     dateOfBirth: "1998-07-20",
     date: "2026-06-15",
     time: "02:30 PM",
-    doctor: "Dr. Hassan Qureshi",
+    doctor: "Nida Niaz",
     issue: "Teeth Whitening",
     complaint: "Discoloration due to coffee and tea consumption",
     diagnosis: "Extrinsic staining — suitable for professional whitening",
@@ -48,7 +52,7 @@ const appointments = [
     notes: "2 sessions recommended. First session completed.",
     status: "Scheduled",
     previousVisits: [
-      { date: "2026-01-05", reason: "Scaling & Polishing", doctor: "Dr. Hassan Qureshi" },
+      { date: "2026-01-05", reason: "Scaling & Polishing", doctor: "Nida Niaz" },
     ],
   },
   {
@@ -62,17 +66,17 @@ const appointments = [
     dateOfBirth: "1981-11-03",
     date: "2026-06-14",
     time: "11:00 AM",
-    doctor: "Dr. Saima Malik",
+    doctor: "Kainat Niaz",
     issue: "Cavity Filling",
     complaint: "Sensitivity to cold drinks in upper-right premolar",
     diagnosis: "Class II cavity — composite filling required",
     treatment: "Composite Resin Filling",
     notes: "Patient cooperative. Advised to avoid hard candy.",
-    status: "Completed",
+    status: "Scheduled",
     previousVisits: [
-      { date: "2025-06-18", reason: "Tooth Extraction", doctor: "Dr. Bilal Siddiqui" },
-      { date: "2024-11-30", reason: "X-Ray & Consultation", doctor: "Dr. Saima Malik" },
-      { date: "2024-05-14", reason: "Routine Checkup", doctor: "Dr. Hassan Qureshi" },
+      { date: "2025-06-18", reason: "Tooth Extraction",    doctor: "Azhar Elahi" },
+      { date: "2024-11-30", reason: "X-Ray & Consultation", doctor: "Kainat Niaz" },
+      { date: "2024-05-14", reason: "Routine Checkup",      doctor: "Nida Niaz" },
     ],
   },
   {
@@ -86,17 +90,17 @@ const appointments = [
     dateOfBirth: "2004-02-28",
     date: "2026-06-13",
     time: "09:00 AM",
-    doctor: "Dr. Bilal Siddiqui",
+    doctor: "Azhar Elahi",
     issue: "Braces Checkup",
     complaint: "Monthly braces adjustment and wire tightening",
     diagnosis: "Orthodontic progress on track — 6 months remaining",
     treatment: "Braces Adjustment",
     notes: "Next appointment in 4 weeks. Upper wire replaced.",
-    status: "Completed",
+    status: "Scheduled",
     previousVisits: [
-      { date: "2026-05-13", reason: "Braces Adjustment", doctor: "Dr. Bilal Siddiqui" },
-      { date: "2026-04-10", reason: "Braces Adjustment", doctor: "Dr. Bilal Siddiqui" },
-      { date: "2025-12-01", reason: "Braces Fitting", doctor: "Dr. Bilal Siddiqui" },
+      { date: "2026-05-13", reason: "Braces Adjustment", doctor: "Azhar Elahi" },
+      { date: "2026-04-10", reason: "Braces Adjustment", doctor: "Azhar Elahi" },
+      { date: "2025-12-01", reason: "Braces Fitting",    doctor: "Azhar Elahi" },
     ],
   },
   {
@@ -110,16 +114,16 @@ const appointments = [
     dateOfBirth: "1974-09-11",
     date: "2026-06-12",
     time: "03:00 PM",
-    doctor: "Dr. Hassan Qureshi",
+    doctor: "Nida Niaz",
     issue: "Tooth Extraction",
     complaint: "Broken molar — irreparable, extraction advised",
     diagnosis: "Non-restorable tooth — extraction required",
     treatment: "Surgical Extraction",
     notes: "Referred for implant consultation post-healing.",
-    status: "Completed",
+    status: "Scheduled",
     previousVisits: [
-      { date: "2026-05-20", reason: "X-Ray & Consultation", doctor: "Dr. Hassan Qureshi" },
-      { date: "2025-03-07", reason: "Gum Treatment", doctor: "Dr. Saima Malik" },
+      { date: "2026-05-20", reason: "X-Ray & Consultation", doctor: "Nida Niaz" },
+      { date: "2025-03-07", reason: "Gum Treatment",         doctor: "Kainat Niaz" },
     ],
   },
   {
@@ -133,15 +137,15 @@ const appointments = [
     dateOfBirth: "1995-06-14",
     date: "2026-06-11",
     time: "10:30 AM",
-    doctor: "Dr. Saima Malik",
+    doctor: "Kainat Niaz",
     issue: "Gum Treatment",
     complaint: "Bleeding gums and bad breath for 2 weeks",
     diagnosis: "Moderate gingivitis — scaling required",
     treatment: "Deep Scaling & Root Planing",
     notes: "Prescribed chlorhexidine mouthwash. Follow-up in 2 weeks.",
-    status: "Completed",
+    status: "Scheduled",
     previousVisits: [
-      { date: "2025-09-30", reason: "Routine Checkup", doctor: "Dr. Saima Malik" },
+      { date: "2025-09-30", reason: "Routine Checkup", doctor: "Kainat Niaz" },
     ],
   },
   {
@@ -155,15 +159,15 @@ const appointments = [
     dateOfBirth: "1987-04-25",
     date: "2026-06-10",
     time: "01:00 PM",
-    doctor: "Dr. Bilal Siddiqui",
+    doctor: "Azhar Elahi",
     issue: "Dental X-Ray",
     complaint: "Jaw pain and suspected impacted wisdom tooth",
     diagnosis: "Impacted lower-right wisdom tooth — OPG taken",
     treatment: "OPG X-Ray + Consultation",
     notes: "Surgical extraction recommended. Referred to oral surgeon.",
-    status: "Completed",
+    status: "Scheduled",
     previousVisits: [
-      { date: "2025-11-22", reason: "Cavity Filling", doctor: "Dr. Hassan Qureshi" },
+      { date: "2025-11-22", reason: "Cavity Filling", doctor: "Nida Niaz" },
     ],
   },
   {
@@ -177,13 +181,13 @@ const appointments = [
     dateOfBirth: "2000-01-18",
     date: "2026-06-09",
     time: "04:00 PM",
-    doctor: "Dr. Hassan Qureshi",
+    doctor: "Nida Niaz",
     issue: "Scaling & Polishing",
     complaint: "Tartar buildup and mild staining",
     diagnosis: "Supragingival calculus — routine scaling advised",
     treatment: "Ultrasonic Scaling & Polish",
     notes: "Advised twice-daily brushing technique correction.",
-    status: "Completed",
+    status: "Scheduled",
     previousVisits: [],
   },
   {
@@ -197,16 +201,16 @@ const appointments = [
     dateOfBirth: "1978-12-05",
     date: "2026-06-07",
     time: "09:30 AM",
-    doctor: "Dr. Saima Malik",
+    doctor: "Kainat Niaz",
     issue: "Crown Placement",
     complaint: "Previously root-canal treated tooth needs crown",
     diagnosis: "Post-RCT tooth — PFM crown indicated",
     treatment: "Porcelain-Fused-Metal Crown",
     notes: "Temporary crown placed. Permanent crown in 7 days.",
-    status: "Completed",
+    status: "Scheduled",
     previousVisits: [
-      { date: "2026-05-28", reason: "Crown Impression", doctor: "Dr. Saima Malik" },
-      { date: "2026-04-15", reason: "Root Canal", doctor: "Dr. Saima Malik" },
+      { date: "2026-05-28", reason: "Crown Impression", doctor: "Kainat Niaz" },
+      { date: "2026-04-15", reason: "Root Canal",       doctor: "Kainat Niaz" },
     ],
   },
   {
@@ -220,15 +224,15 @@ const appointments = [
     dateOfBirth: "2007-08-30",
     date: "2026-06-05",
     time: "11:30 AM",
-    doctor: "Dr. Bilal Siddiqui",
+    doctor: "Azhar Elahi",
     issue: "Wisdom Tooth",
     complaint: "Pain and swelling in lower-right wisdom area",
     diagnosis: "Pericoronitis around partially erupted wisdom tooth",
     treatment: "Antibiotics + Antiseptic Rinse",
     notes: "If symptoms persist, surgical extraction in 2 weeks.",
-    status: "Completed",
+    status: "Scheduled",
     previousVisits: [
-      { date: "2025-07-14", reason: "Routine Checkup", doctor: "Dr. Hassan Qureshi" },
+      { date: "2025-07-14", reason: "Routine Checkup", doctor: "Nida Niaz" },
     ],
   },
 ];

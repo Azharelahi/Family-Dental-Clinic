@@ -17,12 +17,8 @@ const S = {
     position: "relative",
     overflow: "hidden",
     fontFamily: ff,
-    cursor: "pointer",
-    transition: "box-shadow 0.18s ease, transform 0.18s ease",
-  },
-  cardHover: {
-    boxShadow: "0 8px 28px rgba(13,59,122,0.16)",
-    transform: "translateY(-2px)",
+    // ✅ NOT clickable — removed cursor:pointer and click handler
+    transition: "box-shadow 0.18s ease",
   },
   accentBar: {
     position: "absolute", top: 0, left: 0, right: 0, height: "4px",
@@ -38,9 +34,10 @@ const S = {
     color: "#fff", fontSize: "14px", fontWeight: "700", flexShrink: 0,
   },
   nameBlock: { display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 },
-  name: { fontSize: "14px", fontWeight: "700", color: "#1A2E4A", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+  name:  { fontSize: "14px", fontWeight: "700", color: "#1A2E4A", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
   issue: { fontSize: "11px", color: "#0097A7", fontWeight: "500", margin: 0 },
-  // Action buttons
+
+  // 3-button action row
   actionRow: { display: "flex", gap: "4px", flexShrink: 0 },
   iconBtn: {
     width: "30px", height: "30px", borderRadius: "8px",
@@ -50,22 +47,22 @@ const S = {
     transition: "background 0.15s ease, border-color 0.15s ease",
     flexShrink: 0,
   },
-  editBtnHover: { background: "#EFF8FF", borderColor: "#93C5FD" },
-  deleteBtnHover: { background: "#FEF2F2", borderColor: "#FCA5A5" },
+  editBtnHover:     { background: "#EFF8FF", borderColor: "#93C5FD" },
+  completeBtnHover: { background: "#F0FDF4", borderColor: "#86EFAC" },
+  deleteBtnHover:   { background: "#FEF2F2", borderColor: "#FCA5A5" },
+
   divider: { height: "1px", background: "#E8EEF7" },
   infoGrid: { display: "flex", flexDirection: "column", gap: "7px" },
-  infoRow: { display: "flex", alignItems: "center", gap: "8px" },
+  infoRow:  { display: "flex", alignItems: "center", gap: "8px" },
   infoIcon: { fontSize: "13px", flexShrink: 0 },
   infoContent: { display: "flex", flexDirection: "column" },
   infoLabel: { fontSize: "10px", color: "#90A4AE", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.6px", margin: 0 },
   infoValue: { fontSize: "12px", color: "#37474F", fontWeight: "500", margin: 0 },
+
   bottomRow: { display: "flex", alignItems: "center", justifyContent: "space-between" },
   badge: {
     display: "inline-flex", alignItems: "center", padding: "3px 10px",
     borderRadius: "20px", fontSize: "10px", fontWeight: "600",
-  },
-  viewHint: {
-    fontSize: "11px", color: "#B0BEC5", fontStyle: "italic",
   },
 };
 
@@ -82,25 +79,26 @@ function formatDate(d) {
   return new Date(d).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" });
 }
 
-export default function AppointmentCard({ appointment, onView, onEdit, onDelete }) {
-  const [cardHovered, setCardHovered] = useState(false);
-  const [editHovered, setEditHovered] = useState(false);
-  const [deleteHovered, setDeleteHovered] = useState(false);
+/**
+ * AppointmentCard
+ * Props:
+ *  - appointment  : object
+ *  - onEdit       : (appointment) => void
+ *  - onComplete   : (appointment) => void  ← NEW: marks as completed & removes card
+ *  - onDelete     : (appointment) => void
+ *
+ * onView has been intentionally removed — cards are no longer clickable.
+ * TODO (backend): onComplete should call window.api.updateAppointment(id, { status: "Completed" })
+ */
+export default function AppointmentCard({ appointment, onEdit, onComplete, onDelete }) {
+  const [editHov,     setEditHov]     = useState(false);
+  const [completeHov, setCompleteHov] = useState(false);
+  const [deleteHov,   setDeleteHov]   = useState(false);
+
   const { name, date, time, doctor, issue, status = "Scheduled" } = appointment;
 
-  const handleCardClick = (e) => {
-    // Don't trigger if clicking action buttons
-    if (e.target.closest("[data-action]")) return;
-    onView(appointment);
-  };
-
   return (
-    <div
-      style={cardHovered ? { ...S.card, ...S.cardHover } : S.card}
-      onMouseEnter={() => setCardHovered(true)}
-      onMouseLeave={() => setCardHovered(false)}
-      onClick={handleCardClick}
-    >
+    <div style={S.card}>
       <div style={S.accentBar} />
 
       <div style={S.topRow}>
@@ -112,28 +110,45 @@ export default function AppointmentCard({ appointment, onView, onEdit, onDelete 
           </div>
         </div>
 
-        {/* Edit / Delete icon buttons */}
+        {/* ── 3 action buttons: Edit · Complete · Delete ── */}
         <div style={S.actionRow} data-action="true">
+
+          {/* Edit */}
           <button
             data-action="true"
             title="Edit appointment"
-            style={editHovered ? { ...S.iconBtn, ...S.editBtnHover } : S.iconBtn}
-            onMouseEnter={() => setEditHovered(true)}
-            onMouseLeave={() => setEditHovered(false)}
+            style={editHov ? { ...S.iconBtn, ...S.editBtnHover } : S.iconBtn}
+            onMouseEnter={() => setEditHov(true)}
+            onMouseLeave={() => setEditHov(false)}
             onClick={(e) => { e.stopPropagation(); onEdit(appointment); }}
           >
             ✏️
           </button>
+
+          {/* Mark as Completed — card disappears from Scheduled view */}
+          <button
+            data-action="true"
+            title="Mark as completed"
+            style={completeHov ? { ...S.iconBtn, ...S.completeBtnHover } : S.iconBtn}
+            onMouseEnter={() => setCompleteHov(true)}
+            onMouseLeave={() => setCompleteHov(false)}
+            onClick={(e) => { e.stopPropagation(); onComplete(appointment); }}
+          >
+            ✅
+          </button>
+
+          {/* Delete */}
           <button
             data-action="true"
             title="Delete appointment"
-            style={deleteHovered ? { ...S.iconBtn, ...S.deleteBtnHover } : S.iconBtn}
-            onMouseEnter={() => setDeleteHovered(true)}
-            onMouseLeave={() => setDeleteHovered(false)}
+            style={deleteHov ? { ...S.iconBtn, ...S.deleteBtnHover } : S.iconBtn}
+            onMouseEnter={() => setDeleteHov(true)}
+            onMouseLeave={() => setDeleteHov(false)}
             onClick={(e) => { e.stopPropagation(); onDelete(appointment); }}
           >
             🗑️
           </button>
+
         </div>
       </div>
 
@@ -167,7 +182,6 @@ export default function AppointmentCard({ appointment, onView, onEdit, onDelete 
         <div style={{ ...S.badge, ...(statusColors[status] || statusColors.Scheduled) }}>
           {status}
         </div>
-        <span style={S.viewHint}>Click to view ›</span>
       </div>
     </div>
   );
