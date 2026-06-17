@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header          from "../components/Header";
 import AppointmentCard from "../components/AppointmentCard";
 
 const ff = "'Segoe UI', system-ui, -apple-system, sans-serif";
+
+// ── Constants (module scope — correct) ────────────────────────────────────
+const DOCTORS  = ["Kainat Niaz", "Nida Niaz", "Amna Niaz"];
+const STATUSES = ["Scheduled", "Completed", "Cancelled"];
 
 function injectKF() {
   if (document.getElementById("appt-kf")) return;
@@ -21,9 +25,6 @@ function injectKF() {
   document.head.appendChild(s);
 }
 
-const DOCTORS  = ["Kainat Niaz", "Nida Niaz", "Azhar Elahi"];
-const STATUSES = ["Scheduled", "Completed", "Cancelled"];
-
 const S = {
   page:    { minHeight:"100vh", background:"#F0F4F8", display:"flex", flexDirection:"column", fontFamily:ff },
   content: { flex:1, padding:"40px 60px", display:"flex", flexDirection:"column", gap:"28px", boxSizing:"border-box" },
@@ -32,7 +33,6 @@ const S = {
   breadcrumbSep:    { color:"#CFD8DC" },
   breadcrumbActive: { color:"#1565C0" },
 
-  // Heading row — title left, "Completed Appointments" button right
   headingRow: {
     display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:"16px", flexWrap:"wrap",
   },
@@ -41,7 +41,6 @@ const S = {
   pageDesc:    { fontSize:"14px", color:"#78909C", margin:0 },
   newBadge:    { display:"inline-flex", padding:"2px 8px", borderRadius:"20px", background:"#DCFCE7", color:"#15803D", fontSize:"10px", fontWeight:"700", marginLeft:"8px", verticalAlign:"middle" },
 
-  // "Completed Appointments" button — top-right of heading
   completedBtn: {
     display:"flex", alignItems:"center", gap:"8px",
     padding:"10px 20px", borderRadius:"12px", border:"none",
@@ -72,7 +71,6 @@ const S = {
   emptyTitle: { fontSize:"16px", fontWeight:"600", color:"#546E7A", margin:0 },
   emptyDesc:  { fontSize:"13px", color:"#90A4AE", margin:0 },
 
-  // ── Completed panel overlay ──────────────────────────────────────────────
   panelOverlay: {
     position:"fixed", inset:0,
     background:"rgba(10,30,60,0.45)",
@@ -109,7 +107,6 @@ const S = {
     display:"flex", flexDirection:"column", gap:"12px",
   },
 
-  // ── Modals ───────────────────────────────────────────────────────────────
   overlay: { position:"fixed", inset:0, background:"rgba(10,30,60,0.5)", backdropFilter:"blur(3px)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center" },
 
   confirmBox:   { background:"#fff", borderRadius:"18px", padding:"32px 28px", width:"380px", boxShadow:"0 20px 50px rgba(10,30,60,0.2)", animation:"apptIn 0.2s ease", display:"flex", flexDirection:"column", gap:"16px", alignItems:"center", textAlign:"center" },
@@ -133,46 +130,54 @@ const S = {
   saveBtn:    { padding:"10px 24px", borderRadius:"9px", border:"none", background:"linear-gradient(135deg,#1565C0,#0097A7)", color:"#fff", fontSize:"13px", fontWeight:"600", cursor:"pointer", fontFamily:ff },
 };
 
-/**
- * AppointmentsPage
- *
- * Main view  → shows only SCHEDULED appointments
- * Side panel → slides in from right showing COMPLETED appointments
- *
- * When ✅ is clicked:
- *   1. Confirmation dialog shown
- *   2. On confirm → status updated to "Completed" in shared state
- *   3. Card immediately disappears from main view
- *   4. Card appears inside the "Completed Appointments" side panel
- *
- * TODO (backend integration):
- *   handleComplete → window.api.updateAppointment(id, { status: "Completed" })
- *   handleDelete   → window.api.deleteAppointment(id)
- *   handleEditSave → window.api.updateAppointment(id, editForm)
- */
 export default function AppointmentsPage({ onBack, appointments, setAppointments }) {
   injectKF();
 
+  // ── BUG FIX 1: useEffect and loadAppointments were floating outside the
+  //   component at module scope — moved inside the component so they have
+  //   access to React state and hooks are called in the right context.
+  useEffect(() => {
+    loadAppointments();
+  }, []);
+
+  // ── BUG FIX 2: loadAppointments was defined at module scope with no access
+  //   to setAppointments. Moved inside component and normalized data inline.
+  const loadAppointments = async () => {
+    try {
+      const data = await window.electronAPI.getAppointments();
+
+      // ── BUG FIX 3: `normalized` was computed at module scope referencing
+      //   an undefined `data` variable. Moved here where `data` actually exists.
+      const normalized = data.map(a => ({
+        id:     a.id,
+        name:   a.name,
+        date:   a.appointment_date,
+        time:   a.appointment_time,
+        doctor: a.doctor,
+        issue:  a.purpose,
+        status: a.status,
+      }));
+
+      setAppointments(normalized);
+    } catch (err) {
+      console.error("Failed to load appointments:", err);
+    }
+  };
+
   const sorted = [...appointments].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  // Separate scheduled vs completed
-  const scheduledList  = sorted.filter(a => (a.status || "Scheduled") === "Scheduled");
-  const completedList  = sorted.filter(a => a.status === "Completed");
+  const scheduledList = sorted.filter(a => (a.status || "Scheduled") === "Scheduled");
+  const completedList = sorted.filter(a => a.status === "Completed");
 
-  const [showCompleted,  setShowCompleted]  = useState(false);
-  const [completeAppt,   setCompleteAppt]   = useState(null);
-  const [deleteAppt,     setDeleteAppt]     = useState(null);
-  const [editAppt,       setEditAppt]       = useState(null);
-  const [editForm,       setEditForm]       = useState({});
-  const [completedBtnHov, setCompletedBtnHov] = useState(false);
+  const [showCompleted,    setShowCompleted]    = useState(false);
+  const [completeAppt,     setCompleteAppt]     = useState(null);
+  const [deleteAppt,       setDeleteAppt]       = useState(null);
+  const [editAppt,         setEditAppt]         = useState(null);
+  const [editForm,         setEditForm]         = useState({});
+  const [completedBtnHov,  setCompletedBtnHov]  = useState(false);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
-  /**
-   * Mark as Completed:
-   * Moves card from Scheduled → Completed (disappears from main view).
-   * TODO: await window.api.updateAppointment(appt.id, { status: "Completed" })
-   */
   const handleComplete = (appt) => {
     setAppointments(prev =>
       prev.map(a => a.id === appt.id ? { ...a, status: "Completed" } : a)
@@ -180,10 +185,6 @@ export default function AppointmentsPage({ onBack, appointments, setAppointments
     setCompleteAppt(null);
   };
 
-  /**
-   * Delete appointment permanently.
-   * TODO: await window.api.deleteAppointment(appt.id)
-   */
   const handleDelete = (appt) => {
     setAppointments(prev => prev.filter(a => a.id !== appt.id));
     setDeleteAppt(null);
@@ -194,14 +195,14 @@ export default function AppointmentsPage({ onBack, appointments, setAppointments
     setEditForm({ date: appt.date, time: appt.time, doctor: appt.doctor, status: appt.status || "Scheduled" });
   };
 
-  /**
-   * Save edits.
-   * TODO: await window.api.updateAppointment(editAppt.id, editForm)
-   */
   const handleEditSave = () => {
     setAppointments(prev => prev.map(a => a.id === editAppt.id ? { ...a, ...editForm } : a));
     setEditAppt(null);
   };
+
+  // ── BUG FIX 4: appointments.some(...) could throw if appointments is
+  //   undefined/null on the first render. Guard with optional chaining.
+  const hasNewAppointment = appointments?.some(a => a.id > 1000000000000) ?? false;
 
   return (
     <div style={S.page}>
@@ -221,7 +222,7 @@ export default function AppointmentsPage({ onBack, appointments, setAppointments
             <div style={S.headingLeft}>
               <h2 style={S.pageTitle}>
                 Appointment Schedule
-                {appointments.some(a => a.id > 1000000000000) && (
+                {hasNewAppointment && (
                   <span style={S.newBadge}>NEW</span>
                 )}
               </h2>
@@ -230,7 +231,6 @@ export default function AppointmentsPage({ onBack, appointments, setAppointments
               </p>
             </div>
 
-            {/* "Completed Appointments" button — top-right of heading */}
             <button
               style={{
                 ...S.completedBtn,
@@ -249,7 +249,7 @@ export default function AppointmentsPage({ onBack, appointments, setAppointments
         {/* ── Stats ────────────────────────────────────────────────────── */}
         <div style={S.statsStrip}>
           {[
-            { icon:"📋", val: sorted.length,        lbl:"Total" },
+            { icon:"📋", val: sorted.length,        lbl:"Total"     },
             { icon:"🟢", val: scheduledList.length,  lbl:"Scheduled" },
             { icon:"✅", val: completedList.length,  lbl:"Completed" },
             { icon:"👨‍⚕️", val: [...new Set(sorted.map(a => a.doctor))].length, lbl:"Doctors" },
@@ -291,19 +291,11 @@ export default function AppointmentsPage({ onBack, appointments, setAppointments
 
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
-          Completed Appointments — slide-in side panel
-          Opens when "✅ Completed Appointments" button is clicked.
-          Shows all appointments with status === "Completed".
-      ══════════════════════════════════════════════════════════════════ */}
+      {/* ── Completed Appointments — slide-in side panel ─────────────── */}
       {showCompleted && (
-        <div
-          style={S.panelOverlay}
-          onClick={() => setShowCompleted(false)}
-        >
+        <div style={S.panelOverlay} onClick={() => setShowCompleted(false)}>
           <div style={S.panel} onClick={e => e.stopPropagation()}>
 
-            {/* Panel header */}
             <div style={S.panelHeader}>
               <div style={S.panelHeaderLeft}>
                 <p style={S.panelTitle}>✅ Completed Appointments</p>
@@ -312,7 +304,6 @@ export default function AppointmentsPage({ onBack, appointments, setAppointments
               <button style={S.panelCloseBtn} onClick={() => setShowCompleted(false)}>✕</button>
             </div>
 
-            {/* Panel body — completed cards (no action buttons needed here) */}
             <div style={S.panelBody}>
               {completedList.length > 0 ? (
                 completedList.map(appt => (
@@ -320,7 +311,7 @@ export default function AppointmentsPage({ onBack, appointments, setAppointments
                     key={appt.id}
                     appointment={appt}
                     onEdit={handleEditOpen}
-                    onComplete={() => {}} // already completed — noop
+                    onComplete={() => {}}
                     onDelete={setDeleteAppt}
                   />
                 ))
@@ -386,7 +377,7 @@ export default function AppointmentsPage({ onBack, appointments, setAppointments
             </div>
             <div style={S.editBody}>
               {[
-                { key:"date", label:"Date", type:"date"   },
+                { key:"date", label:"Date", type:"date" },
                 { key:"time", label:"Time", type:"text", placeholder:"e.g. 10:00 AM" },
               ].map(f => (
                 <div key={f.key} style={S.editField}>

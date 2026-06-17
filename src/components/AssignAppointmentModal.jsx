@@ -127,14 +127,15 @@ function getInitials(name) {
   return name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 }
 
-const emptyForm = {
-  appointment_date: "",
-  appointment_time: "",
-  purpose: "",
-};
 
-export default function AssignAppointmentModal({ patient, onSave, onClose }) {
-  const [form, setForm]       = useState(emptyForm);
+
+export default function AssignAppointmentModal({ patient, doctors = [], onSave, onClose })  {
+  const [form, setForm] = useState({
+  date: "",
+  time: "",
+  issue: "",
+  doctor: ""
+});
   const [focused, setFocused] = useState(null);
 
   useEffect(() => {
@@ -154,13 +155,14 @@ export default function AssignAppointmentModal({ patient, onSave, onClose }) {
       return;
     }
 
-    const payload = {
-      name: patient.name,
-      phone: patient.phone,
-      appointment_date: form.appointment_date,
-      appointment_time: form.appointment_time,
-      purpose: form.purpose,
-    };
+  const payload = {
+  name: patient.name,
+  phone: patient.phone,
+  appointment_date: form.appointment_date,
+  appointment_time: form.appointment_time,
+  doctor: form.doctor,
+  purpose: form.purpose,
+};
 
     const result = await window.api.createAppointment(payload);
 
@@ -212,7 +214,23 @@ export default function AssignAppointmentModal({ patient, onSave, onClose }) {
               />
             </div>
           </div>
+<div style={S.field}>
+  <label style={S.label}>Doctor</label>
 
+  <select
+    style={S.input}
+    value={form.doctor || ""}
+    onChange={(e) => setForm(p => ({ ...p, doctor: e.target.value }))}
+  >
+    <option value="">Select Doctor</option>
+
+    {doctors.map((doc, idx) => (
+      <option key={idx} value={doc}>
+        {doc}
+      </option>
+    ))}
+  </select>
+</div>
           <div style={S.field}>
             <label style={S.label}>Purpose</label>
             <textarea

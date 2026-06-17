@@ -40,8 +40,8 @@ export function handleGetPatientDetails(patientId) {
     }
 }
 export function handleCreateAppointment(data) {
-    const { name, phone, appointment_date, appointment_time, purpose } = data;
-
+    const { name, phone, appointment_date, appointment_time,doctor, purpose } = data;
+console.log("Creating appointment with data:", data);
     try {
         const patientId = db.getPatientIdByNameAndPhone(name, phone);
         if (!patientId) {
@@ -58,6 +58,7 @@ export function handleCreateAppointment(data) {
             patient_id: patientId,
             appointment_date,
             appointment_time,
+            doctor,
             purpose,
         });
 
@@ -79,3 +80,6 @@ export function handleDeletePatient(patientId) {
         return { success: false, error: error.message };
     }
 }
+export const getAppointments = async (status) => {
+  return database.getAppointments(status);
+};

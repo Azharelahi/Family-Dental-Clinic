@@ -5,7 +5,11 @@ import AssignAppointmentModal from "../components/AssignAppointmentModal";
 import patients               from "../data/patients";
 
 const ff = "'Segoe UI', system-ui, -apple-system, sans-serif";
-
+const DOCTORS = [
+  "Kainat Niaz",
+  "Nida Niaz",
+  "Amna Niaz"
+];
 function injectKF() {
   if (document.getElementById("search-kf")) return;
   const s = document.createElement("style");
@@ -316,11 +320,12 @@ const handleDelete = async (patient) => {
 )}
 
       {assignPatient && (
-        <AssignAppointmentModal
-          patient={assignPatient}
-          onSave={handleAssignSave}
-          onClose={() => setAssignPatient(null)}
-        />
+       <AssignAppointmentModal
+  patient={assignPatient}
+  doctors={DOCTORS}
+  onSave={handleAssignSave}
+  onClose={() => setAssignPatient(null)}
+/>
       )}
 
       {editPatient && (

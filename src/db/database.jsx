@@ -205,8 +205,8 @@ getLatestMedicalRecordId(patientId) {
 
 addAppointment(payload) {
     const insert = this.db.prepare(`
-        INSERT INTO appointments (medical_record_id, patient_id, appointment_date, appointment_time, purpose)
-        VALUES (@medical_record_id, @patient_id, @appointment_date, @appointment_time, @purpose)
+        INSERT INTO appointments (medical_record_id, patient_id, appointment_date, appointment_time, doctor,purpose)
+        VALUES (@medical_record_id, @patient_id, @appointment_date, @appointment_time, @doctor,@purpose)
     `);
 
     const result = insert.run(payload);
@@ -225,6 +225,27 @@ deletePatientCascade(patientId) {
     });
 
     return transaction(patientId);
+}
+getAppointments(status = "Scheduled") {
+  const stmt = this.db.prepare(`
+    SELECT
+      id,
+      patient_id,
+      medical_record_id,
+      appointment_date,
+      appointment_time,
+      doctor,
+      purpose,
+      status,
+      patients.full_name AS name
+    FROM appointments
+    INNER JOIN patients
+      ON appointments.patient_id = patients.id
+    WHERE appointments.status = ?
+    ORDER BY appointment_date ASC, appointment_time ASC
+  `);
+
+  return stmt.all(status);
 }
 }
 
