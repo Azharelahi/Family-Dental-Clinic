@@ -72,9 +72,16 @@ const statusColors = {
   Cancelled:  { background: "#FEF2F2", color: "#C62828" },
 };
 
-function getInitials(name) {
-  return name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
-}
+const getInitials = (name = "") => {
+  if (typeof name !== "string") return "";
+  return name
+    .trim()
+    .split(" ")
+    .filter(Boolean)
+    .map(n => n[0])
+    .join("")
+    .toUpperCase();
+};
 function formatDate(d) {
   return new Date(d).toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" });
 }

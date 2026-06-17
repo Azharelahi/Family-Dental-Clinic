@@ -143,30 +143,33 @@ export default function AppointmentsPage({ onBack, appointments, setAppointments
   // ── BUG FIX 2: loadAppointments was defined at module scope with no access
   //   to setAppointments. Moved inside component and normalized data inline.
   const loadAppointments = async () => {
-    try {
-      const ScheduledAppointmentsdata = await window.api.getScheduledAppointments();
-      const CompletedAppointmentsdata = await window.api.getCompletedAppointments();
-      const CancelledAppointmentsdata = await window.api.getCancelledAppointments();
-console.log("Scheduled appointments data from API:", ScheduledAppointmentsdata);
-console.log("Completed appointments data from API:", CompletedAppointmentsdata);
-console.log("Cancelled appointments data from API:", CancelledAppointmentsdata);
-      // ── BUG FIX 3: `normalized` was computed at module scope referencing
-      //   an undefined `data` variable. Moved here where `data` actually exists.
-      const normalized = data.map(a => ({
-        id:     a.id,
-        name:   a.name,
-        date:   a.appointment_date,
-        time:   a.appointment_time,
-        doctor: a.doctor,
-        issue:  a.purpose,
-        status: a.status,
-      }));
+  try {
+    const scheduled = await window.api.getScheduledAppointments();
+    const completed = await window.api.getCompletedAppointments();
+    const cancelled = await window.api.getCancelledAppointments();
 
-      setAppointments(normalized);
-    } catch (err) {
-      console.error("Failed to load appointments:", err);
-    }
-  };
+  const normalize = (list, status) =>
+  list.map(a => ({
+    id: a.id,
+    name: a.name || a.full_name || a.patient_name || "Unknown Patient",
+    date: a.appointment_date,
+    time: a.appointment_time,
+    doctor: a.doctor,
+    issue: a.purpose,
+    status: status || a.status,
+  }));
+
+    const allAppointments = [
+      ...normalize(scheduled, "Scheduled"),
+      ...normalize(completed, "Completed"),
+      ...normalize(cancelled, "Cancelled"),
+    ];
+
+    setAppointments(allAppointments);
+  } catch (err) {
+    console.error("Failed to load appointments:", err);
+  }
+};
 
   const sorted = [...appointments].sort((a, b) => new Date(b.date) - new Date(a.date));
 
