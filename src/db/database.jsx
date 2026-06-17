@@ -226,26 +226,23 @@ deletePatientCascade(patientId) {
 
     return transaction(patientId);
 }
-getAppointments(status = "Scheduled") {
-  const stmt = this.db.prepare(`
-    SELECT
-      id,
-      patient_id,
-      medical_record_id,
-      appointment_date,
-      appointment_time,
-      doctor,
-      purpose,
-      status,
-      patients.full_name AS name
-    FROM appointments
-    INNER JOIN patients
-      ON appointments.patient_id = patients.id
-    WHERE appointments.status = ?
-    ORDER BY appointment_date ASC, appointment_time ASC
-  `);
-
-  return stmt.all(status);
+getAppointmentsByStatus(status) {
+    return this.db.prepare(`
+        SELECT
+            a.id,
+            p.full_name AS patient_name,
+            a.purpose,
+            a.appointment_date,
+            a.appointment_time,
+            a.doctor,
+            a.status
+        FROM appointments a
+        INNER JOIN patients p
+            ON p.id = a.patient_id
+        WHERE a.status = ?
+        ORDER BY a.appointment_date ASC,
+                 a.appointment_time ASC
+    `).all(status);
 }
 }
 

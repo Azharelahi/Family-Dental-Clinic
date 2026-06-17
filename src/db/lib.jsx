@@ -80,6 +80,29 @@ export function handleDeletePatient(patientId) {
         return { success: false, error: error.message };
     }
 }
-export const getAppointments = async (status) => {
-  return database.getAppointments(status);
-};
+export function handleGetScheduledAppointments() {
+    try {
+        return db.getAppointmentsByStatus('scheduled');
+    } catch (error) {
+        console.error("Get scheduled appointments error:", error);
+        return [];
+    }
+}
+
+export function handleGetCompletedAppointments() {
+    try {
+        return db.getAppointmentsByStatus('completed');
+    } catch (error) {
+        console.error("Get completed appointments error:", error);
+        return [];
+    }
+}
+
+export function handleGetCancelledAppointments() {
+    try {
+        return db.getAppointmentsByStatus('cancelled');
+    } catch (error) {
+        console.error("Get cancelled appointments error:", error);
+        return [];
+    }
+}

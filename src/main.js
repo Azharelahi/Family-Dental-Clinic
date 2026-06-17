@@ -3,7 +3,7 @@ import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import AppDatabase from './db/database';
 const {ipcMain} = require('electron');
-import {getAppointments,addPatient,getFrequentVisitors,handleSearchPatients, handleGetPatientDetails ,handleCreateAppointment,handleDeletePatient} from './db/lib.jsx';
+import {addPatient,getFrequentVisitors,handleSearchPatients, handleGetPatientDetails ,handleCreateAppointment,handleDeletePatient,handleGetScheduledAppointments, handleGetCompletedAppointments, handleGetCancelledAppointments} from './db/lib.jsx';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 let db;
@@ -62,6 +62,9 @@ ipcMain.handle('delete-patient', (event, patientId) => {
 ipcMain.handle("get-appointments", async (_, status) => {
   return await getAppointments(status);
 });
+ipcMain.handle('get-scheduled-appointments', () => handleGetScheduledAppointments());
+ipcMain.handle('get-completed-appointments', () => handleGetCompletedAppointments());
+ipcMain.handle('get-cancelled-appointments', () => handleGetCancelledAppointments());
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();

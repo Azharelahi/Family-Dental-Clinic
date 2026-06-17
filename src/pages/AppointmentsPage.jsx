@@ -144,8 +144,12 @@ export default function AppointmentsPage({ onBack, appointments, setAppointments
   //   to setAppointments. Moved inside component and normalized data inline.
   const loadAppointments = async () => {
     try {
-      const data = await window.electronAPI.getAppointments();
-
+      const ScheduledAppointmentsdata = await window.api.getScheduledAppointments();
+      const CompletedAppointmentsdata = await window.api.getCompletedAppointments();
+      const CancelledAppointmentsdata = await window.api.getCancelledAppointments();
+console.log("Scheduled appointments data from API:", ScheduledAppointmentsdata);
+console.log("Completed appointments data from API:", CompletedAppointmentsdata);
+console.log("Cancelled appointments data from API:", CancelledAppointmentsdata);
       // ── BUG FIX 3: `normalized` was computed at module scope referencing
       //   an undefined `data` variable. Moved here where `data` actually exists.
       const normalized = data.map(a => ({

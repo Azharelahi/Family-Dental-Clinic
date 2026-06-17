@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('api', {
     getPatientDetails: (patientId) => ipcRenderer.invoke('get-patient-details', patientId),
     createAppointment: (data) => ipcRenderer.invoke('create-appointment', data),
      deletePatient: (patientId) => ipcRenderer.invoke('delete-patient', patientId),
-     getAppointments: (status) =>
-    ipcRenderer.invoke("get-appointments", status),
+ getScheduledAppointments: () => ipcRenderer.invoke('get-scheduled-appointments'),
+getCompletedAppointments: () => ipcRenderer.invoke('get-completed-appointments'),
+getCancelledAppointments: () => ipcRenderer.invoke('get-cancelled-appointments'),
 });
