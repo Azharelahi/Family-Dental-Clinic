@@ -127,7 +127,20 @@ function getInitials(name) {
   return name.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 }
 
+const TIME_SLOTS = [];
 
+for (let hour = 9; hour <= 17; hour++) {
+  for (let minute of [0, 30]) {
+    // Stop after 5:00 PM
+    if (hour === 17 && minute > 0) break;
+
+    const h12 = hour > 12 ? hour - 12 : hour;
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const mins = minute === 0 ? "00" : "30";
+
+    TIME_SLOTS.push(`${h12}:${mins} ${ampm}`);
+  }
+}
 
 export default function AssignAppointmentModal({ patient, doctors = [], onSave, onClose })  {
   const [form, setForm] = useState({
@@ -206,12 +219,22 @@ export default function AssignAppointmentModal({ patient, doctors = [], onSave, 
             </div>
             <div style={S.field}>
               <label style={S.label}>Time <span style={S.required}>*</span></label>
-              <input
-                style={inputStyle("appointment_time")} type="text" name="appointment_time"
-                placeholder="e.g. 10:30 AM"
-                value={form.appointment_time} onChange={set}
-                onFocus={() => setFocused("appointment_time")} onBlur={() => setFocused(null)}
-              />
+             <select
+  name="appointment_time"
+  style={inputStyle("appointment_time")}
+  value={form.appointment_time}
+  onChange={set}
+  onFocus={() => setFocused("appointment_time")}
+  onBlur={() => setFocused(null)}
+>
+  <option value="">Select Time</option>
+
+  {TIME_SLOTS.map((time) => (
+    <option key={time} value={time}>
+      {time}
+    </option>
+  ))}
+</select>
             </div>
           </div>
 <div style={S.field}>
