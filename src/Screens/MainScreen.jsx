@@ -1,6 +1,6 @@
 import Header from "../components/Header";
 import NavButton from "../components/NavButton";
-
+import { useEffect, useState } from "react";
 const ff = "'Segoe UI', system-ui, -apple-system, sans-serif";
 
 const styles = {
@@ -36,6 +36,20 @@ const navItems = [
 ];
 
 export default function MainScreen({ onNavigate }) {
+   const [stats, setStats] = useState({ totalPatients: "—", todaysAppointments: "—" });
+  
+   useEffect(() => {
+    console.log("window.api:", window.api);
+  
+    const load = async () => {
+      console.log("Loading dashboard stats...");
+      const data = await window.api.getDashboardStats();
+      console.log("Dashboard stats:", data);
+      setStats(data);
+    };
+  
+    load();
+  }, []);
   return (
     <div style={styles.page}>
       <Header />
@@ -46,8 +60,8 @@ export default function MainScreen({ onNavigate }) {
         <h2 style={styles.heroTitle}>Patient Management Dashboard</h2>
         <p style={styles.heroSub}>Manage patient records, appointments, and clinic analytics from one place.</p>
         <div style={styles.statsRow}>
-          <div style={styles.statCard}><p style={styles.statNumber}>—</p><p style={styles.statLabel}>Total Patients</p></div>
-          <div style={styles.statCard}><p style={styles.statNumber}>—</p><p style={styles.statLabel}>Today's Appointments</p></div>
+          <div style={styles.statCard}><p style={styles.statNumber}>{stats.totalPatients}</p><p style={styles.statLabel}>Total Patients</p></div>
+          <div style={styles.statCard}><p style={styles.statNumber}>{stats.todaysAppointments}</p><p style={styles.statLabel}>Today's Appointments</p></div>
           <div style={styles.statCard}><p style={styles.statNumber}>3</p><p style={styles.statLabel}>Doctors On Duty</p></div>
         </div>
       </div>

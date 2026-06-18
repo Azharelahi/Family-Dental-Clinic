@@ -267,6 +267,19 @@ updateAppointment(appointmentId, fields) {
     `).run({ ...fields, id: appointmentId });
     return result.changes;
 }
+getTotalPatients() {
+    const row = this.db.prepare(`SELECT COUNT(*) AS count FROM patients`).get();
+    return row.count;
+}
+
+getTodaysAppointments() {
+    const row = this.db.prepare(`
+        SELECT COUNT(*) AS count FROM appointments
+        WHERE appointment_date = date('now')
+        AND status = 'scheduled'
+    `).get();
+    return row.count;
+}
 }
 
 export default AppDatabase;

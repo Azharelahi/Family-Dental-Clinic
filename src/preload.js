@@ -18,4 +18,5 @@ getCancelledAppointments: () => ipcRenderer.invoke('get-cancelled-appointments')
 deleteAppointment:   (appointmentId) => ipcRenderer.invoke('delete-appointment', appointmentId),
 completeAppointment: (appointmentId) => ipcRenderer.invoke('complete-appointment', appointmentId),
 updateAppointment:   (appointmentId, fields) => ipcRenderer.invoke('update-appointment', appointmentId, fields),
+getDashboardStats: () => ipcRenderer.invoke('get-dashboard-stats'),
 });

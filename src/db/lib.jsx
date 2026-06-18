@@ -138,3 +138,14 @@ export function handleUpdateAppointment(appointmentId, fields) {
         return { success: false, error: error.message };
     }
 }
+export function handleGetDashboardStats() {
+    try {
+        return {
+            totalPatients: db.getTotalPatients(),
+            todaysAppointments: db.getTodaysAppointments(),
+        };
+    } catch (error) {
+        console.error("Dashboard stats error:", error);
+        return { totalPatients: 0, todaysAppointments: 0 };
+    }
+}
