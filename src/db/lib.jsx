@@ -106,3 +106,35 @@ export function handleGetCancelledAppointments() {
         return [];
     }
 }
+export function handleDeleteAppointment(appointmentId) {
+    try {
+        const changes = db.deleteAppointment(appointmentId);
+        if (changes === 0) return { success: false, error: "Appointment not found" };
+        return { success: true, message: "Appointment deleted" };
+    } catch (error) {
+        console.error("Delete appointment error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export function handleCompleteAppointment(appointmentId) {
+    try {
+        const changes = db.updateAppointmentStatus(appointmentId, 'completed');
+        if (changes === 0) return { success: false, error: "Appointment not found" };
+        return { success: true, message: "Appointment marked as completed" };
+    } catch (error) {
+        console.error("Complete appointment error:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export function handleUpdateAppointment(appointmentId, fields) {
+    try {
+        const changes = db.updateAppointment(appointmentId, fields);
+        if (changes === 0) return { success: false, error: "Appointment not found" };
+        return { success: true, message: "Appointment updated" };
+    } catch (error) {
+        console.error("Update appointment error:", error);
+        return { success: false, error: error.message };
+    }
+}

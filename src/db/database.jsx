@@ -244,6 +244,29 @@ getAppointmentsByStatus(status) {
                  a.appointment_time ASC
     `).all(status);
 }
+deleteAppointment(appointmentId) {
+    const result = this.db.prepare(`DELETE FROM appointments WHERE id = ?`).run(appointmentId);
+    return result.changes;
+}
+
+updateAppointmentStatus(appointmentId, status) {
+    const result = this.db.prepare(`
+        UPDATE appointments SET status = ? WHERE id = ?
+    `).run(status, appointmentId);
+    return result.changes;
+}
+
+updateAppointment(appointmentId, fields) {
+    const result = this.db.prepare(`
+        UPDATE appointments
+        SET appointment_date = @appointment_date,
+            appointment_time = @appointment_time,
+            doctor = @doctor,
+            status = @status
+        WHERE id = @id
+    `).run({ ...fields, id: appointmentId });
+    return result.changes;
+}
 }
 
 export default AppDatabase;

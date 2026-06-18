@@ -185,27 +185,51 @@ export default function AppointmentsPage({ onBack, appointments, setAppointments
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
-  const handleComplete = (appt) => {
-    setAppointments(prev =>
-      prev.map(a => a.id === appt.id ? { ...a, status: "Completed" } : a)
-    );
+ const handleComplete = async (appt) => {
+    const result = await window.api.completeAppointment(appt.id);
+    if (result.success) {
+        setAppointments(prev =>
+            prev.map(a => a.id === appt.id ? { ...a, status: "Completed" } : a)
+        );
+    } else {
+        alert(result.error);
+    }
     setCompleteAppt(null);
-  };
+};
 
-  const handleDelete = (appt) => {
-    setAppointments(prev => prev.filter(a => a.id !== appt.id));
+ const handleDelete = async (appt) => {
+    const result = await window.api.deleteAppointment(appt.id);
+    if (result.success) {
+        setAppointments(prev => prev.filter(a => a.id !== appt.id));
+    } else {
+        alert(result.error);
+    }
     setDeleteAppt(null);
-  };
+};
 
   const handleEditOpen = (appt) => {
     setEditAppt(appt);
     setEditForm({ date: appt.date, time: appt.time, doctor: appt.doctor, status: appt.status || "Scheduled" });
   };
 
-  const handleEditSave = () => {
-    setAppointments(prev => prev.map(a => a.id === editAppt.id ? { ...a, ...editForm } : a));
+const handleEditSave = async () => {
+    const fields = {
+        appointment_date: editForm.date,
+        appointment_time: editForm.time,
+        doctor: editForm.doctor,
+        status: editForm.status.toLowerCase(),
+    };
+
+    const result = await window.api.updateAppointment(editAppt.id, fields);
+    if (result.success) {
+        setAppointments(prev =>
+            prev.map(a => a.id === editAppt.id ? { ...a, ...editForm, status: editForm.status } : a)
+        );
+    } else {
+        alert(result.error);
+    }
     setEditAppt(null);
-  };
+};
 
   // ── BUG FIX 4: appointments.some(...) could throw if appointments is
   //   undefined/null on the first render. Guard with optional chaining.

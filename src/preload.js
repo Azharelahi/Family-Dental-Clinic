@@ -15,4 +15,7 @@ contextBridge.exposeInMainWorld('api', {
  getScheduledAppointments: () => ipcRenderer.invoke('get-scheduled-appointments'),
 getCompletedAppointments: () => ipcRenderer.invoke('get-completed-appointments'),
 getCancelledAppointments: () => ipcRenderer.invoke('get-cancelled-appointments'),
+deleteAppointment:   (appointmentId) => ipcRenderer.invoke('delete-appointment', appointmentId),
+completeAppointment: (appointmentId) => ipcRenderer.invoke('complete-appointment', appointmentId),
+updateAppointment:   (appointmentId, fields) => ipcRenderer.invoke('update-appointment', appointmentId, fields),
 });
