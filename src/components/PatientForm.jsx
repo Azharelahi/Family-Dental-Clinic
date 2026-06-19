@@ -61,14 +61,96 @@ const S = {
   hint: { fontSize: "11px", color: "#90A4AE", marginTop: "2px", fontFamily: ff },
 };
 
+// Common dental complaints mapped to their typical treatment(s).
+// Picking a problem auto-suggests the matching treatment; admin can still override.
+const PROBLEM_TREATMENT_MAP = {
+  "Tooth Decay / Cavity": "Dental Filling (Composite/Amalgam)",
+  "Tooth Pain / Toothache": "Pain Relief + RCT Evaluation",
+  "Gum Bleeding / Gingivitis": "Scaling & Polishing",
+  "Tooth Sensitivity": "Desensitizing Treatment / Fluoride Application",
+  "Broken / Chipped Tooth": "Tooth Restoration / Crown",
+  "Wisdom Tooth Pain": "Wisdom Tooth Extraction",
+  "Tooth Decay (Severe) / Pulp Infection": "Root Canal Treatment (RCT)",
+  "Loose Tooth": "Splinting / Extraction",
+  "Bad Breath (Halitosis)": "Oral Prophylaxis & Hygiene Instructions",
+  "Misaligned Teeth": "Orthodontic Consultation / Braces",
+  "Tooth Loss / Missing Tooth": "Dental Implant / Bridge / Denture",
+  "Mouth Ulcers": "Topical Medication / Symptomatic Treatment",
+  "Jaw Pain (TMJ)": "TMJ Therapy / Night Guard",
+  "Dental Checkup / Routine Visit": "Routine Cleaning & Examination",
+  "Other": "",
+};
+
+const PROBLEM_OPTIONS = Object.keys(PROBLEM_TREATMENT_MAP);
+
+const TREATMENT_OPTIONS = [
+  "Dental Filling (Composite/Amalgam)",
+  "Pain Relief + RCT Evaluation",
+  "Scaling & Polishing",
+  "Desensitizing Treatment / Fluoride Application",
+  "Tooth Restoration / Crown",
+  "Wisdom Tooth Extraction",
+  "Root Canal Treatment (RCT)",
+  "Splinting / Extraction",
+  "Oral Prophylaxis & Hygiene Instructions",
+  "Orthodontic Consultation / Braces",
+  "Dental Implant / Bridge / Denture",
+  "Topical Medication / Symptomatic Treatment",
+  "TMJ Therapy / Night Guard",
+  "Routine Cleaning & Examination",
+  "Other",
+];
+
 const initial = {
   // Personal
-  fullName: "", dateOfBirth: "", age: "", gender: "", phone: "", address: "",
-  // Medical
-  complaint: "", diagnosis: "", treatment: "", notes: "",
-  // Status
-  isActive: "Active",
+  fullName: "", age: "", gender: "", phone: "", address: "",
+  // Medical (dropdown-driven, fast entry)
+  complaint: "", complaintOther: "",
+  treatment: "", treatmentOther: "",
+  diagnosis: "", notes: "",
 };
+
+// Turns an age into an approximate DOB. Year is accurate; month/day are fixed
+// placeholders (Jan 1) since only the birth year matters here.
+function ageToDob(age) {
+  const n = parseInt(age, 10);
+  if (!n || n <= 0) return "";
+  const currentYear = new Date().getFullYear();
+  const birthYear = currentYear - n;
+  return `${birthYear}-01-01`;
+}
+
+// Keeps only letters and single spaces, and caps the name at 3 words so the
+// field can't be turned into a paragraph.
+function sanitizeName(raw) {
+  const lettersOnly = raw.replace(/[^a-zA-Z\s]/g, "");
+  const collapsedSpaces = lettersOnly.replace(/\s{2,}/g, " ");
+  const words = collapsedSpaces.split(" ");
+  if (words.length > 3) {
+    return words.slice(0, 3).join(" ");
+  }
+  return collapsedSpaces.replace(/^\s+/, "");
+}
+
+// Forces the phone number into the 03XXXXXXXXX shape: digits only,
+// must start with "03", capped at 11 digits total.
+function sanitizePhone(raw) {
+  let digits = raw.replace(/\D/g, "");
+  digits = digits.slice(0, 11);
+  if (digits.length === 0) return "";
+  if (digits[0] !== "0") {
+    digits = "0" + digits.slice(0, 10);
+  }
+  if (digits.length >= 2 && digits[1] !== "3") {
+    digits = digits[0] + "3" + digits.slice(2, 10);
+    digits = digits.slice(0, 11);
+  }
+  return digits;
+}
+
+function isValidPhone(phone) {
+  return /^03\d{9}$/.test(phone);
+}
 
 export default function PatientForm() {
   const [form, setForm]       = useState(initial);
@@ -78,37 +160,79 @@ export default function PatientForm() {
 
   const set = (e) => { setForm((p) => ({ ...p, [e.target.name]: e.target.value })); setSubmitted(false); };
 
+  // Name field: letters/spaces only, max 3 words, sanitized live as the admin types.
+  const setName = (e) => {
+    const clean = sanitizeName(e.target.value);
+    setForm((p) => ({ ...p, fullName: clean }));
+    setSubmitted(false);
+  };
+
+  // Phone field: digits only, forced to start with 03, capped at 11 digits.
+  const setPhone = (e) => {
+    const clean = sanitizePhone(e.target.value);
+    setForm((p) => ({ ...p, phone: clean }));
+    setSubmitted(false);
+  };
+
+  // Selecting a problem auto-fills the matching treatment suggestion.
+  const setComplaint = (e) => {
+    const value = e.target.value;
+    setForm((p) => ({
+      ...p,
+      complaint: value,
+      treatment: value === "Other" ? p.treatment : (PROBLEM_TREATMENT_MAP[value] || p.treatment),
+    }));
+    setSubmitted(false);
+  };
+
   const inputStyle = (name) => ({ ...S.input, ...(focused === name ? S.inputFocus : {}) });
   const taStyle    = (name) => ({ ...S.textarea, ...(focused === name ? S.inputFocus : {}) });
 
   const handleSubmit = async() => {
-    const required = ["fullName", "dateOfBirth", "gender", "phone"];
+    const required = ["fullName", "age", "gender", "phone"];
     const missing = required.filter((k) => !form[k].trim());
     if (missing.length) { alert("Please fill all required fields (marked with *)."); return; }
 
-const patientPayload = {
-  full_name: form.fullName,
-  date_of_birth: form.dateOfBirth,
-  gender: form.gender,
-  phone: form.phone,
-  address: form.address,
-  status: form.isActive,
-};
+    if (form.fullName.trim().split(/\s+/).length < 1 || form.fullName.trim().length < 2) {
+      alert("Please enter a valid name."); return;
+    }
 
-const medicalPayload = {
-  complaint: form.complaint,
-  diagnosis: form.diagnosis,
-  treatment: form.treatment,
-  notes: form.notes,
-};
+    if (!isValidPhone(form.phone)) {
+      alert("Phone number must be exactly 11 digits and start with 03 (e.g. 03001234567)."); return;
+    }
 
-// console.log("=== PATIENT PAYLOAD ===");
-// console.table(patientPayload);
+    const finalComplaint = form.complaint === "Other" ? form.complaintOther.trim() : form.complaint;
+    const finalTreatment = form.treatment === "Other" ? form.treatmentOther.trim() : form.treatment;
 
-// console.log("=== MEDICAL PAYLOAD ===");
-// console.table(medicalPayload);
+    if (form.complaint === "Other" && !finalComplaint) { alert("Please write the problem since 'Other' was selected."); return; }
+    if (form.treatment === "Other" && !finalTreatment) { alert("Please write the treatment since 'Other' was selected."); return; }
 
- const result = await window.api.addPatient({ patientPayload, medicalPayload });
+    const dateOfBirth = ageToDob(form.age);
+
+    const patientPayload = {
+      full_name: form.fullName,
+      date_of_birth: dateOfBirth,
+      age: form.age,
+      gender: form.gender,
+      phone: form.phone,
+      address: form.address,
+      status: "Active", // every new patient defaults to Active in the DB
+    };
+
+    const medicalPayload = {
+      complaint: finalComplaint,
+      diagnosis: form.diagnosis,
+      treatment: finalTreatment,
+      notes: form.notes,
+    };
+
+    // console.log("=== PATIENT PAYLOAD ===");
+    // console.table(patientPayload);
+
+    // console.log("=== MEDICAL PAYLOAD ===");
+    // console.table(medicalPayload);
+
+    const result = await window.api.addPatient({ patientPayload, medicalPayload });
 
     if (result.success) {
         alert("Data Saved Successfully");
@@ -134,23 +258,16 @@ const medicalPayload = {
         <div style={S.row}>
           <div style={S.field}>
             <label style={S.label}>Full Name<span style={S.required}>*</span></label>
-            <input style={inputStyle("fullName")} type="text" name="fullName" placeholder="e.g. Ahmed Raza"
-              value={form.fullName} onChange={set} onFocus={() => setFocused("fullName")} onBlur={() => setFocused(null)} />
+            <input style={inputStyle("fullName")} type="text" name="fullName" placeholder="e.g. Ahmed Raza" maxLength={40}
+              value={form.fullName} onChange={setName} onFocus={() => setFocused("fullName")} onBlur={() => setFocused(null)} />
+            <p style={S.hint}>Name only, max 3 words</p>
           </div>
           <div style={S.field}>
-            <label style={S.label}>Date of Birth<span style={S.required}>*</span></label>
-            <input style={inputStyle("dateOfBirth")} type="date" name="dateOfBirth"
-              value={form.dateOfBirth} onChange={set} onFocus={() => setFocused("dateOfBirth")} onBlur={() => setFocused(null)} />
-          </div>
-          <div style={S.field}>
-            <label style={S.label}>Age (years)</label>
-            <input style={inputStyle("age")} type="number" name="age" placeholder="Auto-calculated or enter" min="1" max="120"
+            <label style={S.label}>Age (years)<span style={S.required}>*</span></label>
+            <input style={inputStyle("age")} type="number" name="age" placeholder="e.g. 24" min="1" max="120"
               value={form.age} onChange={set} onFocus={() => setFocused("age")} onBlur={() => setFocused(null)} />
-            <p style={S.hint}>Leave blank to auto-calculate from DOB</p>
+            <p style={S.hint}>Date of birth is auto-set from age (year only)</p>
           </div>
-        </div>
-
-        <div style={S.row}>
           <div style={S.field}>
             <label style={S.label}>Gender<span style={S.required}>*</span></label>
             <select style={S.select} name="gender" value={form.gender} onChange={set}>
@@ -158,24 +275,22 @@ const medicalPayload = {
               <option>Male</option><option>Female</option><option>Other</option>
             </select>
           </div>
-          <div style={S.field}>
-            <label style={S.label}>Phone Number<span style={S.required}>*</span></label>
-            <input style={inputStyle("phone")} type="tel" name="phone" placeholder="e.g. 0300-1234567"
-              value={form.phone} onChange={set} onFocus={() => setFocused("phone")} onBlur={() => setFocused(null)} />
-          </div>
-          <div style={S.field}>
-            <label style={S.label}>Status</label>
-            <select style={S.select} name="isActive" value={form.isActive} onChange={set}>
-              <option>Active</option><option>Inactive</option>
-            </select>
-          </div>
         </div>
 
-        <div style={S.fieldFull}>
-          <label style={S.label}>Full Address</label>
-          <input style={inputStyle("address")} type="text" name="address"
-            placeholder="e.g. House 12, Block B, Gulshan-e-Iqbal, Karachi"
-            value={form.address} onChange={set} onFocus={() => setFocused("address")} onBlur={() => setFocused(null)} />
+        <div style={S.row}>
+          <div style={S.field}>
+            <label style={S.label}>Phone Number<span style={S.required}>*</span></label>
+            <input style={inputStyle("phone")} type="tel" name="phone" placeholder="03001234567" maxLength={11} inputMode="numeric"
+              value={form.phone} onChange={setPhone} onFocus={() => setFocused("phone")} onBlur={() => setFocused(null)} />
+            <p style={S.hint}>11 digits, must start with 03</p>
+          </div>
+          <div style={S.fieldFull}>
+            <label style={S.label}>Full Address</label>
+            <input style={inputStyle("address")} type="text" name="address"
+              placeholder="e.g. Gulshan-e-Iqbal, Karachi"
+              value={form.address} onChange={set} onFocus={() => setFocused("address")} onBlur={() => setFocused(null)} />
+          </div>
+
         </div>
       </div>
 
@@ -185,34 +300,48 @@ const medicalPayload = {
       <div style={S.section}>
         <p style={S.sectionTitle}><span>🩺 Medical Record</span><span style={S.sectionLine} /></p>
 
-        <div style={S.fieldFull}>
-          <label style={S.label}>Complaint / Reason of Visit</label>
-          <textarea style={taStyle("complaint")} name="complaint"
-            placeholder="Patient's chief complaint in their own words..."
-            value={form.complaint} onChange={set} onFocus={() => setFocused("complaint")} onBlur={() => setFocused(null)} />
-          <p style={S.hint}>Important: Do NOT store this inside the patient table — it belongs in the Medical Record.</p>
+        <div style={S.row}>
+          <div style={S.field}>
+            <label style={S.label}>Problem / Complaint<span style={S.required}>*</span></label>
+            <select style={S.select} name="complaint" value={form.complaint} onChange={setComplaint}>
+              <option value="">Select problem</option>
+              {PROBLEM_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
+            </select>
+            {form.complaint === "Other" && (
+              <input style={{ ...inputStyle("complaintOther"), marginTop: "4px" }} type="text" name="complaintOther"
+                placeholder="Write the problem..."
+                value={form.complaintOther} onChange={set} onFocus={() => setFocused("complaintOther")} onBlur={() => setFocused(null)} />
+            )}
+          </div>
+
+          <div style={S.field}>
+            <label style={S.label}>Treatment</label>
+            <select style={S.select} name="treatment" value={form.treatment} onChange={set}>
+              <option value="">Select treatment</option>
+              {TREATMENT_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+            {form.treatment === "Other" && (
+              <input style={{ ...inputStyle("treatmentOther"), marginTop: "4px" }} type="text" name="treatmentOther"
+                placeholder="Write the treatment..."
+                value={form.treatmentOther} onChange={set} onFocus={() => setFocused("treatmentOther")} onBlur={() => setFocused(null)} />
+            )}
+            <p style={S.hint}>Auto-filled from problem, can be changed</p>
+          </div>
         </div>
 
         <div style={S.row}>
           <div style={S.field}>
             <label style={S.label}>Diagnosis</label>
-            <textarea style={{ ...taStyle("diagnosis"), minHeight: "70px" }} name="diagnosis"
+            <textarea style={{ ...taStyle("diagnosis"), minHeight: "60px" }} name="diagnosis"
               placeholder="Clinical diagnosis after examination..."
               value={form.diagnosis} onChange={set} onFocus={() => setFocused("diagnosis")} onBlur={() => setFocused(null)} />
           </div>
           <div style={S.field}>
-            <label style={S.label}>Treatment Plan</label>
-            <textarea style={{ ...taStyle("treatment"), minHeight: "70px" }} name="treatment"
-              placeholder="Proposed or administered treatment..."
-              value={form.treatment} onChange={set} onFocus={() => setFocused("treatment")} onBlur={() => setFocused(null)} />
+            <label style={S.label}>Doctor's Notes</label>
+            <textarea style={{ ...taStyle("notes"), minHeight: "60px" }} name="notes"
+              placeholder="Allergies, follow-up reminders..."
+              value={form.notes} onChange={set} onFocus={() => setFocused("notes")} onBlur={() => setFocused(null)} />
           </div>
-        </div>
-
-        <div style={S.fieldFull}>
-          <label style={S.label}>Doctor's Notes</label>
-          <textarea style={taStyle("notes")} name="notes"
-            placeholder="Allergies, special instructions, follow-up reminders..."
-            value={form.notes} onChange={set} onFocus={() => setFocused("notes")} onBlur={() => setFocused(null)} />
         </div>
       </div>
 

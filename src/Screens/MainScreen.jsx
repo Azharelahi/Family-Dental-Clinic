@@ -56,7 +56,7 @@ export default function MainScreen({ onNavigate }) {
       <div style={styles.hero}>
         <div style={styles.heroBgCircle1} />
         <div style={styles.heroBgCircle2} />
-        <p style={styles.heroGreeting}>Welcome Back</p>
+        <p style={styles.heroGreeting}>Welcome To The </p>
         <h2 style={styles.heroTitle}>Patient Management Dashboard</h2>
         <p style={styles.heroSub}>Manage patient records, appointments, and clinic analytics from one place.</p>
         <div style={styles.statsRow}>
