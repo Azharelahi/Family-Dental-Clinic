@@ -171,10 +171,17 @@ export default function AppointmentsPage({ onBack, appointments, setAppointments
   }
 };
 
-  const sorted = [...appointments].sort((a, b) => new Date(b.date) - new Date(a.date));
+const sorted = [...appointments].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  const scheduledList = sorted.filter(a => (a.status || "Scheduled") === "Scheduled");
-  const completedList = sorted.filter(a => a.status === "Completed");
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const scheduledList = sorted.filter(a =>
+    (a.status || "Scheduled") === "Scheduled" &&
+    new Date(a.date) >= today
+);
+const completedList = sorted.filter(a => a.status === "Completed");
+  
 
   const [showCompleted,    setShowCompleted]    = useState(false);
   const [completeAppt,     setCompleteAppt]     = useState(null);
