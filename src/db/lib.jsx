@@ -88,7 +88,14 @@ export function handleGetScheduledAppointments() {
         return [];
     }
 }
-
+export function handleGetAnalyticsAppointments(filters) {
+    try {
+        return db.getAnalyticsAppointments(filters);
+    } catch (error) {
+        console.error("Analytics fetch error:", error);
+        return [];
+    }
+}
 export function handleGetCompletedAppointments() {
     try {
         return db.getAppointmentsByStatus('completed');

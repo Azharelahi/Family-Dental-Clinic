@@ -3,7 +3,7 @@ import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import AppDatabase from './db/database';
 const {ipcMain} = require('electron');
-import {addPatient,getFrequentVisitors,handleSearchPatients, handleGetPatientDetails ,handleCreateAppointment,handleDeletePatient,handleGetScheduledAppointments, handleGetCompletedAppointments, handleGetCancelledAppointments,handleDeleteAppointment, handleCompleteAppointment, handleUpdateAppointment,handleGetDashboardStats } from './db/lib.jsx';
+import {handleGetAnalyticsAppointments ,addPatient,getFrequentVisitors,handleSearchPatients, handleGetPatientDetails ,handleCreateAppointment,handleDeletePatient,handleGetScheduledAppointments, handleGetCompletedAppointments, handleGetCancelledAppointments,handleDeleteAppointment, handleCompleteAppointment, handleUpdateAppointment,handleGetDashboardStats } from './db/lib.jsx';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 let db;
@@ -84,6 +84,9 @@ ipcMain.handle('get-cancelled-appointments', () => handleGetCancelledAppointment
 ipcMain.handle('complete-appointment', (event, appointmentId) => handleCompleteAppointment(appointmentId));
 ipcMain.handle('update-appointment', (event, appointmentId, fields) => handleUpdateAppointment(appointmentId, fields));
 ipcMain.handle('get-dashboard-stats', () => handleGetDashboardStats());
+ipcMain.handle('get-analytics-appointments', (event, filters) => {
+    return handleGetAnalyticsAppointments(filters);
+});
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();

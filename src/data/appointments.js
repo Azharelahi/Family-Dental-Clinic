@@ -4,7 +4,7 @@
  *   Patient + MedicalRecord + Appointment tables
  *
  * Doctor names updated to actual clinic staff:
- *   Kainat Niaz | Nida Niaz | Azhar Elahi
+ *   Kainat Niaz | Nida Niaz | Amna Niaz
  *
  * TODO: Replace with API calls — e.g. window.api.getAppointments()
  */

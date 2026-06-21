@@ -280,6 +280,45 @@ getTodaysAppointments() {
     `).get();
     return row.count;
 }
+getAnalyticsAppointments({ period, doctor, status } = {}) {
+    let query = `
+        SELECT
+            a.id,
+            p.id AS patientId,
+            p.full_name AS name,
+            p.gender,
+            a.appointment_date AS date,
+            a.doctor,
+            a.purpose AS issue,
+            a.status
+        FROM appointments a
+        INNER JOIN patients p ON p.id = a.patient_id
+        WHERE 1=1
+    `;
+    const params = {};
+
+    if (period === 'Daily') {
+        query += ` AND a.appointment_date = date('now')`;
+    } else if (period === 'Weekly') {
+        query += ` AND a.appointment_date BETWEEN date('now', '-6 days') AND date('now')`;
+    } else if (period === 'Monthly') {
+        query += ` AND strftime('%Y-%m', a.appointment_date) = strftime('%Y-%m', 'now')`;
+    }
+
+    if (doctor && doctor !== 'All') {
+        query += ` AND a.doctor = @doctor`;
+        params.doctor = doctor;
+    }
+
+    if (status && status !== 'All') {
+        query += ` AND a.status = @status`;
+        params.status = status.toLowerCase();
+    }
+
+    query += ` ORDER BY a.appointment_date DESC`;
+
+    return this.db.prepare(query).all(params);
+}
 }
 
 export default AppDatabase;
