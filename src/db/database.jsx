@@ -72,7 +72,7 @@ class AppDatabase {
 
         console.log('Database initialized at:', this.dbPath);
     }
-    addPatientWithRecord(patientPayload, medicalPayload) {
+addPatientWithRecord(patientPayload, medicalPayload) {
     const insertPatient = this.db.prepare(`
         INSERT INTO patients (full_name, date_of_birth, gender, phone, address, status)
         VALUES (@full_name, @date_of_birth, @gender, @phone, @address, @status)
@@ -83,11 +83,27 @@ class AppDatabase {
         VALUES (@patient_id, @complaint, @diagnosis, @treatment, @notes)
     `);
 
+    const updatePatientName = this.db.prepare(`
+        UPDATE patients SET full_name = ? WHERE id = ?
+    `);
+
     const insertTransaction = this.db.transaction((patientPayload, medicalPayload) => {
+        // 1. Insert patient first (temporary name)
         const result = insertPatient.run(patientPayload);
         const patientId = result.lastInsertRowid;
 
-        insertRecord.run({ ...medicalPayload, patient_id: patientId });
+        // 2. Generate formatted name
+        const formattedId = `FDC_${String(patientId).padStart(3, "0")}`;
+        const updatedName = `${patientPayload.full_name} ${formattedId}`;
+
+        // 3. Update patient name with formatted ID
+        updatePatientName.run(updatedName, patientId);
+
+        // 4. Insert medical record
+        insertRecord.run({
+            ...medicalPayload,
+            patient_id: patientId
+        });
 
         return patientId;
     });

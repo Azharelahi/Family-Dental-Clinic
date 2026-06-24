@@ -3,26 +3,64 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 const { AutoUnpackNativesPlugin } = require('@electron-forge/plugin-auto-unpack-natives');
 
 module.exports = {
-  packagerConfig:  {
+  // =========================
+  // PACKAGER CONFIG (App runtime)
+  // =========================
+  packagerConfig: {
     asar: true,
     prune: true,
+
+    // ✅ App icon (window, taskbar while running)
+    icon: './assets/icon',
+
+    // App identity (important for Windows shortcuts)
+    name: 'Clinic App',
+
     ignore: (file) => {
       if (!file) return false;
-      const keep = file.startsWith('/.vite') || (file.startsWith('/node_modules'));
+
+      const keep =
+        file.startsWith('/.vite') ||
+        file.startsWith('/node_modules');
+
       return !keep;
     },
-    icon: 'assets/icon.pn',
   },
+
   rebuildConfig: {},
+
+  // =========================
+  // MAKERS (INSTALLERS)
+  // =========================
   makers: [
+    // ✅ Windows Installer (Squirrel)
     {
       name: '@electron-forge/maker-squirrel',
-      config: {},
+      config: {
+        name: 'clinic_app',
+
+        // ✅ Installer + desktop shortcut icon
+        setupIcon: './assets/icon.ico',
+
+        // App name shown in Windows
+        title: 'Clinic App',
+
+        // Ensures proper shortcut creation behavior
+        noMsi: true,
+      },
     },
+
+    // =========================
+    // macOS
+    // =========================
     {
       name: '@electron-forge/maker-zip',
       platforms: ['darwin'],
     },
+
+    // =========================
+    // Linux
+    // =========================
     {
       name: '@electron-forge/maker-deb',
       config: {},
@@ -32,6 +70,10 @@ module.exports = {
       config: {},
     },
   ],
+
+  // =========================
+  // PLUGINS
+  // =========================
   plugins: [
     {
       name: '@electron-forge/plugin-vite',
@@ -56,7 +98,11 @@ module.exports = {
         ],
       },
     },
+
+    // Native module support
     new AutoUnpackNativesPlugin({}),
+
+    // Security fuses
     new FusesPlugin({
       version: FuseVersion.V1,
       [FuseV1Options.RunAsNode]: false,
