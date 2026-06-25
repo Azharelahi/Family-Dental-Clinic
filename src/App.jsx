@@ -6,7 +6,7 @@ import SearchPatientPage  from "./pages/SearchPatientPage";
 import AppointmentsPage   from "./pages/AppointmentsPage";
 import AnalyticsPage      from "./pages/AnalyticsPage";
 import appointmentsRaw    from "./data/appointments";
-
+import { Toaster } from "react-hot-toast";
 /**
  * App.jsx — Central router + shared state owner
  *
@@ -41,7 +41,16 @@ export default function App() {
 
   return (
     <div style={{ width:"100%", minHeight:"100vh", fontFamily:"'Segoe UI', system-ui, sans-serif" }}>
-
+   <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            borderRadius: "10px",
+            fontSize: "14px",
+          },
+        }}
+      />
       {page === "splash" && (
         <SplashScreen onComplete={() => navigate("main")} />
       )}

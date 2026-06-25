@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import toast from "react-hot-toast";
 const ff = "'Segoe UI', system-ui, -apple-system, sans-serif";
 
 const S = {
@@ -58,11 +58,15 @@ const S = {
     background: "#E8F5E9", border: "1px solid #A5D6A7",
     color: "#2E7D32", fontSize: "14px", fontWeight: "500", fontFamily: ff,
   },
+  errorBanner: {
+    display: "flex", alignItems: "center", gap: "10px",
+    padding: "14px 20px", borderRadius: "10px",
+    background: "#FFEBEE", border: "1px solid #EF9A9A",
+    color: "#C62828", fontSize: "14px", fontWeight: "500", fontFamily: ff,
+  },
   hint: { fontSize: "11px", color: "#90A4AE", marginTop: "2px", fontFamily: ff },
 };
 
-// Common dental complaints mapped to their typical treatment(s).
-// Picking a problem auto-suggests the matching treatment; admin can still override.
 const PROBLEM_TREATMENT_MAP = {
   "Tooth Decay / Cavity": "Dental Filling (Composite/Amalgam)",
   "Tooth Pain / Toothache": "Pain Relief + RCT Evaluation",
@@ -102,45 +106,32 @@ const TREATMENT_OPTIONS = [
 ];
 
 const initial = {
-  // Personal
   fullName: "", age: "", gender: "", phone: "", address: "",
-  // Medical (dropdown-driven, fast entry)
   complaint: "", complaintOther: "",
   treatment: "", treatmentOther: "",
   diagnosis: "", notes: "",
 };
 
-// Turns an age into an approximate DOB. Year is accurate; month/day are fixed
-// placeholders (Jan 1) since only the birth year matters here.
 function ageToDob(age) {
   const n = parseInt(age, 10);
   if (!n || n <= 0) return "";
-  const currentYear = new Date().getFullYear();
-  const birthYear = currentYear - n;
+  const birthYear = new Date().getFullYear() - n;
   return `${birthYear}-01-01`;
 }
 
-// Keeps only letters and single spaces, and caps the name at 3 words so the
-// field can't be turned into a paragraph.
 function sanitizeName(raw) {
   const lettersOnly = raw.replace(/[^a-zA-Z\s]/g, "");
   const collapsedSpaces = lettersOnly.replace(/\s{2,}/g, " ");
   const words = collapsedSpaces.split(" ");
-  if (words.length > 3) {
-    return words.slice(0, 3).join(" ");
-  }
+  if (words.length > 3) return words.slice(0, 3).join(" ");
   return collapsedSpaces.replace(/^\s+/, "");
 }
 
-// Forces the phone number into the 03XXXXXXXXX shape: digits only,
-// must start with "03", capped at 11 digits total.
 function sanitizePhone(raw) {
   let digits = raw.replace(/\D/g, "");
   digits = digits.slice(0, 11);
   if (digits.length === 0) return "";
-  if (digits[0] !== "0") {
-    digits = "0" + digits.slice(0, 10);
-  }
+  if (digits[0] !== "0") digits = "0" + digits.slice(0, 10);
   if (digits.length >= 2 && digits[1] !== "3") {
     digits = digits[0] + "3" + digits.slice(2, 10);
     digits = digits.slice(0, 11);
@@ -153,28 +144,29 @@ function isValidPhone(phone) {
 }
 
 export default function PatientForm() {
-  const [form, setForm]       = useState(initial);
-  const [focused, setFocused] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
+  const [form,          setForm]          = useState(initial);
+  const [focused,       setFocused]       = useState(null);
   const [submitHovered, setSubmitHovered] = useState(false);
+  const [success,       setSuccess]       = useState(null);
+  const [error,         setError]         = useState(null);
 
-  const set = (e) => { setForm((p) => ({ ...p, [e.target.name]: e.target.value })); setSubmitted(false); };
+  const clearBanners = () => { setSuccess(null); setError(null); };
 
-  // Name field: letters/spaces only, max 3 words, sanitized live as the admin types.
+  const set = (e) => {
+    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+    clearBanners();
+  };
+
   const setName = (e) => {
-    const clean = sanitizeName(e.target.value);
-    setForm((p) => ({ ...p, fullName: clean }));
-    setSubmitted(false);
+    setForm((p) => ({ ...p, fullName: sanitizeName(e.target.value) }));
+    clearBanners();
   };
 
-  // Phone field: digits only, forced to start with 03, capped at 11 digits.
   const setPhone = (e) => {
-    const clean = sanitizePhone(e.target.value);
-    setForm((p) => ({ ...p, phone: clean }));
-    setSubmitted(false);
+    setForm((p) => ({ ...p, phone: sanitizePhone(e.target.value) }));
+    clearBanners();
   };
 
-  // Selecting a problem auto-fills the matching treatment suggestion.
   const setComplaint = (e) => {
     const value = e.target.value;
     setForm((p) => ({
@@ -182,75 +174,66 @@ export default function PatientForm() {
       complaint: value,
       treatment: value === "Other" ? p.treatment : (PROBLEM_TREATMENT_MAP[value] || p.treatment),
     }));
-    setSubmitted(false);
+    clearBanners();
   };
 
-  const inputStyle = (name) => ({ ...S.input, ...(focused === name ? S.inputFocus : {}) });
+  const inputStyle = (name) => ({ ...S.input,    ...(focused === name ? S.inputFocus : {}) });
   const taStyle    = (name) => ({ ...S.textarea, ...(focused === name ? S.inputFocus : {}) });
 
-  const handleSubmit = async() => {
+  const handleSubmit = async () => {
+    clearBanners();
+
     const required = ["fullName", "age", "gender", "phone"];
     const missing = required.filter((k) => !form[k].trim());
-    if (missing.length) { alert("Please fill all required fields (marked with *)."); return; }
+    if (missing.length) { setError("Please fill all required fields (marked with *)."); return; }
 
-    if (form.fullName.trim().split(/\s+/).length < 1 || form.fullName.trim().length < 2) {
-      alert("Please enter a valid name."); return;
+    if (form.fullName.trim().length < 2) {
+      setError("Please enter a valid name."); return;
     }
 
     if (!isValidPhone(form.phone)) {
-      alert("Phone number must be exactly 11 digits and start with 03 (e.g. 03001234567)."); return;
+      setError("Phone number must be exactly 11 digits and start with 03 (e.g. 03001234567)."); return;
     }
 
     const finalComplaint = form.complaint === "Other" ? form.complaintOther.trim() : form.complaint;
     const finalTreatment = form.treatment === "Other" ? form.treatmentOther.trim() : form.treatment;
 
-    if (form.complaint === "Other" && !finalComplaint) { alert("Please write the problem since 'Other' was selected."); return; }
-    if (form.treatment === "Other" && !finalTreatment) { alert("Please write the treatment since 'Other' was selected."); return; }
-
-    const dateOfBirth = ageToDob(form.age);
+    if (form.complaint === "Other" && !finalComplaint) { setError("Please write the problem since 'Other' was selected."); return; }
+    if (form.treatment === "Other" && !finalTreatment) { setError("Please write the treatment since 'Other' was selected."); return; }
 
     const patientPayload = {
-      full_name: form.fullName,
-      date_of_birth: dateOfBirth,
-      age: form.age,
-      gender: form.gender,
-      phone: form.phone,
-      address: form.address,
-      status: "Active", // every new patient defaults to Active in the DB
+      full_name:     form.fullName,
+      date_of_birth: ageToDob(form.age),
+      age:           form.age,
+      gender:        form.gender,
+      phone:         form.phone,
+      address:       form.address,
+      status:        "Active",
     };
 
     const medicalPayload = {
       complaint: finalComplaint,
       diagnosis: form.diagnosis,
       treatment: finalTreatment,
-      notes: form.notes,
+      notes:     form.notes,
     };
-
-    // console.log("=== PATIENT PAYLOAD ===");
-    // console.table(patientPayload);
-
-    // console.log("=== MEDICAL PAYLOAD ===");
-    // console.table(medicalPayload);
 
     const result = await window.api.addPatient({ patientPayload, medicalPayload });
 
     if (result.success) {
-        alert("Data Saved Successfully");
-        setSubmitted(true);
-        setForm(initial);
+toast.success(
+  `Patient saved successfully. ID: ${result.patientCode}`
+);      setForm(initial);
     } else {
-        alert(result.message + ": " + result.error);
+      toast.error(result.error || "Failed to save patient. Please try again.");
     }
-
   };
 
   return (
     <div style={S.form}>
-      {submitted && (
-        <div style={S.successBanner}>
-          ✅ Patient record saved successfully. Ready for backend integration.
-        </div>
-      )}
+
+      {success && <div style={S.successBanner}>✅ {success}</div>}
+      {error   && <div style={S.errorBanner}>⚠️ {error}</div>}
 
       {/* ── Section 1: Personal Info ── */}
       <div style={S.section}>
@@ -290,7 +273,6 @@ export default function PatientForm() {
               placeholder="e.g. Gulshan-e-Iqbal, Karachi"
               value={form.address} onChange={set} onFocus={() => setFocused("address")} onBlur={() => setFocused(null)} />
           </div>
-
         </div>
       </div>
 
@@ -348,7 +330,7 @@ export default function PatientForm() {
       <div style={S.divider} />
 
       <div style={S.submitRow}>
-        <button style={S.resetBtn} onClick={() => { setForm(initial); setSubmitted(false); }}>Clear Form</button>
+        <button style={S.resetBtn} onClick={() => { setForm(initial); clearBanners(); }}>Clear Form</button>
         <button
           style={submitHovered ? { ...S.submitBtn, opacity: 0.9, transform: "translateY(-1px)" } : S.submitBtn}
           onMouseEnter={() => setSubmitHovered(true)}
