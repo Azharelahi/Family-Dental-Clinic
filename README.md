@@ -42,50 +42,7 @@ This structure allows queries like "who missed their follow-up?" and "what is th
 
 ---
 
-## 🗄️ Database Schema
 
-```sql
--- Core patient registry
-CREATE TABLE patients (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    patient_code    TEXT UNIQUE,
-    full_name       TEXT NOT NULL,
-    date_of_birth   DATE NOT NULL,
-    gender          TEXT NOT NULL,
-    phone           TEXT NOT NULL,
-    address         TEXT,
-    status          TEXT DEFAULT 'Active',
-    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- One row per diagnosed issue / visit case
-CREATE TABLE medical_records (
-    id               INTEGER PRIMARY KEY AUTOINCREMENT,
-    patient_id       INTEGER NOT NULL,
-    complaint        TEXT,
-    diagnosis        TEXT,
-    treatment        TEXT,
-    notes            TEXT,
-    complaint_status TEXT DEFAULT 'open',
-    created_at       DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (patient_id) REFERENCES patients(id)
-);
-
--- One row per scheduled visit, linked to a specific case
-CREATE TABLE appointments (
-    id                INTEGER PRIMARY KEY AUTOINCREMENT,
-    medical_record_id INTEGER NOT NULL,
-    patient_id        INTEGER NOT NULL,
-    appointment_date  DATE NOT NULL,
-    appointment_time  TEXT,
-    doctor            TEXT,
-    purpose           TEXT,
-    status            TEXT DEFAULT 'scheduled',
-    created_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (medical_record_id) REFERENCES medical_records(id),
-    FOREIGN KEY (patient_id)        REFERENCES patients(id)
-);
-```
 
 ---
 
