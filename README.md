@@ -207,7 +207,7 @@ npm run make
 
 # Build and publish to GitHub Releases
 # This triggers auto-update on all client machines
-$env:GITHUB_TOKEN = "your_classic_token_here"
+$env:GITHUB_TOKEN = "Azhar's Secret Access Token"
 npm run publish
 ```
 
