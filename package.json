@@ -12,6 +12,11 @@
     "publish": "electron-forge publish",
     "lint": "echo \"No linting configured\""
   },
+  "repository": "https://github.com/Azharelahi/Family-Dental-Clinic/",
+  "publish":{
+    "provider": "github",
+   "releaseType": "release"
+  },
   "build":{
 "appId":"com.azharelahi.familydentalclinic",
 "productName":"Family Dental Clinic",

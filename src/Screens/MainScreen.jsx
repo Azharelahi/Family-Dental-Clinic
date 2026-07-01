@@ -39,12 +39,9 @@ export default function MainScreen({ onNavigate }) {
    const [stats, setStats] = useState({ totalPatients: "—", todaysAppointments: "—" });
   
    useEffect(() => {
-    console.log("window.api:", window.api);
   
     const load = async () => {
-      console.log("Loading dashboard stats...");
       const data = await window.api.getDashboardStats();
-      console.log("Dashboard stats:", data);
       setStats(data);
     };
   

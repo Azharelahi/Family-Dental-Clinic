@@ -4,13 +4,14 @@ import started from 'electron-squirrel-startup';
 import AppDatabase from './db/database';
 const {ipcMain} = require('electron');
 import {handleGetAnalyticsAppointments ,addPatient,getFrequentVisitors,handleSearchPatients, handleGetPatientDetails ,handleCreateAppointment,handleDeletePatient,handleGetScheduledAppointments, handleGetCompletedAppointments, handleGetCancelledAppointments,handleDeleteAppointment, handleCompleteAppointment, handleUpdateAppointment,handleGetDashboardStats } from './db/lib.jsx';
-
+import { autoUpdater,AppUpdater } from 'electron-updater';
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 let db;
 if (started) {
   app.quit();
 }
-
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = true;
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -53,14 +54,12 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   createWindow();
-
+autoUpdater.checkForUpdates();
 db = new AppDatabase();
 ipcMain.handle('add-patient', async (event, data) => {
-// console.log("Data received in main.js:", data);
 return await addPatient(data);
 })
 ipcMain.handle('get-frequent-visitors', async () => {
-  console.log("IPC 'get-frequent-visitors' invoked");
     return await getFrequentVisitors();
 });
 ipcMain.handle('search-patients', (event, query) => {

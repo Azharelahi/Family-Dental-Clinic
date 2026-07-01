@@ -3,7 +3,6 @@ import Header from "../components/Header";
 import NavButton from "../components/NavButton";
 
 const ff = "'Segoe UI', system-ui, -apple-system, sans-serif";
-console.log("THIS FILE IS ACTIVE: MainScreen.jsx");
 const styles = {
   page: { minHeight:"100vh", background:"#F0F4F8", display:"flex", flexDirection:"column", fontFamily:ff },
   hero: { background:"linear-gradient(160deg, #0d3b7a 0%, #1565C0 55%, #0097A7 100%)", padding:"48px 60px 56px", color:"#ffffff", position:"relative", overflow:"hidden" },
@@ -33,12 +32,9 @@ export default function MainScreen({ onNavigate }) {
   const [stats, setStats] = useState({ totalPatients: "—", todaysAppointments: "—" });
 
  useEffect(() => {
-  console.log("window.api:", window.api);
 
   const load = async () => {
-    console.log("Loading dashboard stats...");
     const data = await window.api.getDashboardStats();
-    console.log("Dashboard stats:", data);
     setStats(data);
   };
 

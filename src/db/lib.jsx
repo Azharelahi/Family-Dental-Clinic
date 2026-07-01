@@ -41,7 +41,7 @@ export function handleGetPatientDetails(patientId) {
 }
 export function handleCreateAppointment(data) {
     const { name, phone, appointment_date, appointment_time,doctor, purpose } = data;
-console.log("Creating appointment with data:", data);
+
     try {
         const patientId = db.getPatientIdByNameAndPhone(name, phone);
         if (!patientId) {
